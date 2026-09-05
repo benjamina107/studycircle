@@ -3,9 +3,30 @@
 ## Status
 
 Resend reports `studycircles.me` as verified. The domain is registered through
-Namecheap. The shared project's SMTP form is prepared with the settings below;
-credential entry, saving, and a real verification-email test remain pending.
-This document does not enable hosted SMTP by itself.
+Namecheap. Custom SMTP is saved and remains enabled after reloading the shared
+project's settings, using the Resend host and port below. On September 5, 2026,
+Resend recorded the authorized signup test as Delivered from
+`StudyCircle <noreply@studycircles.me>`. The user confirmed the personal test
+worked, with the message arriving in Junk. Delivery is validated; inbox placement
+is not guaranteed. An earlier resend to a missing account returned acceptance
+without an email, demonstrating why provider and inbox evidence are required.
+
+## Inbox placement follow-up
+
+Resend's delivery report flagged missing DMARC and confirmation links using the
+Supabase project domain. DNS lookup also found no `_dmarc.studycircles.me` record.
+Add a TXT record at Namecheap with host `_dmarc`, value `v=DMARC1; p=none;`, and
+automatic TTL. This initial policy enables DMARC without rejecting legitimate
+mail. Do not create duplicate DMARC records. After validating all legitimate
+senders, plan monitoring and a stricter policy. DNS changes are separate from
+this repository and remain pending Namecheap access.
+
+Development links still use Supabase and localhost. Keep the working Auth links
+until an HTTPS deployment and appropriate domain configuration are available;
+do not simply replace the link host. Resend also recommends a reply-capable
+sender; configure an actual support inbox before claiming replies are monitored.
+Mark the test email Not Junk in your mailbox. Authentication, consistent sending,
+and domain reputation help delivery, but the receiving service controls placement.
 
 Supabase Auth continues to create and validate confirmation tokens and manage
 sessions. Resend replaces Supabase's built-in email delivery service through
@@ -45,6 +66,24 @@ Adding `RESEND_API_KEY` or changing `.env.local` alone does not change hosted
 Supabase Auth delivery. Notification email stubs are separate feature work.
 
 ## Verify delivery
+
+Automated coverage runs with `npm test` and does not send email. It checks
+explicit send authorization, campus recipient validation, required confirmation,
+rate-limit/provider failures without retries, and prevents HTTP acceptance from
+being mistaken for delivery.
+
+For an existing **unconfirmed** account you control, run in PowerShell:
+
+```powershell
+$env:EMAIL_TEST_TO = 'your-address@calpoly.edu'
+npm run check:email -- --send
+```
+
+This sends at most one confirmation resend using the public Supabase key from
+`.env.local`; no Resend key is needed locally. It does not create users or reset
+passwords. Missing or already-confirmed accounts may return success without an
+email, so an ACCEPTED result is only the first step. Match the send time,
+recipient, and sender in Resend and check the mailbox before recording a pass.
 
 - Use one real, authorized `@calpoly.edu` test account through the signup UI.
 - Check Supabase Auth logs for the signup result and Resend logs for delivery.
