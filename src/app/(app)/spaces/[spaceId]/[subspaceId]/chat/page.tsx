@@ -1,24 +1,9 @@
-import { mockChannels } from "@/lib/mock-data";
+import ChatRoom from "@/features/chat/ChatRoom";
 
-// Chat tab — predefined channels only, Discord-style (spec §6.5).
-// TODO(chat): channel routes, messages, pinned meetup widget, @ClassAI replies.
-export default function ChatPage() {
-  return (
-    <main>
-      <ul className="flex flex-col gap-2">
-        {mockChannels.map((channel) => (
-          <li
-            key={channel}
-            className="rounded-lg border border-zinc-200 bg-white px-4 py-3 dark:border-zinc-800 dark:bg-zinc-900"
-          >
-            <span className="text-zinc-400">#</span> {channel}
-          </li>
-        ))}
-      </ul>
-      <p className="mt-4 text-center text-sm text-zinc-500">
-        Mention <span className="font-medium">@ClassAI</span> in any channel to
-        ask about the class.
-      </p>
-    </main>
-  );
+export default async function ChatPage(props: { params: Promise<{ spaceId: string; subspaceId: string }>; searchParams: Promise<{ channel?: string | string[]; demo?: string | string[] }> }) {
+  const { spaceId, subspaceId } = await props.params;
+  const search = await props.searchParams;
+  const channel = Array.isArray(search.channel) ? search.channel[0] : search.channel;
+  const demo = (Array.isArray(search.demo) ? search.demo[0] : search.demo) === "1";
+  return <main><ChatRoom spaceId={spaceId} subspaceId={subspaceId} initialChannelId={channel} demo={demo} /></main>;
 }
