@@ -40,3 +40,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Local recovery and legacy database
+/.data/
+dev.db
+*.db-journal
+/src/generated/

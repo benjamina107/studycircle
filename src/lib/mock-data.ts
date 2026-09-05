@@ -19,7 +19,7 @@ export const mockSpaces = [
   },
 ];
 
-export const mockChannels = ["general", "homework", "exam-prep"];
+export const mockChannels = ["general", "homework", "meetups"];
 
 export const mockMeetups = [
   {

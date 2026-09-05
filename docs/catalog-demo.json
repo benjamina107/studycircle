@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "term": "Demo Fall 2026",
+  "starts_on": "2026-08-24",
+  "ends_on": "2026-12-04",
+  "source": { "kind": "demo", "label": "Local Demo — fictional courses, instructors, and meetings", "url": null },
+  "courses": [
+    {
+      "code": "DEMO 101",
+      "title": "Demo: Collaborative Learning",
+      "sections": [
+        { "section_code": "01", "professor_key": "demo-instructor-a", "professor_name": "Demo Instructor A", "days": "MWF", "start_time": "09:00", "end_time": "09:50", "location": "Demo classroom" },
+        { "section_code": "02", "professor_key": "demo-instructor-a", "professor_name": "Demo Instructor A", "days": "MWF", "start_time": "11:00", "end_time": "11:50", "location": "Demo classroom" },
+        { "section_code": "03", "professor_key": "demo-instructor-b", "professor_name": "Demo Instructor B", "days": "TR", "start_time": "13:00", "end_time": "14:15", "location": "Demo classroom" }
+      ]
+    }
+  ]
+}

@@ -5,30 +5,27 @@ import { usePathname } from "next/navigation";
 
 // Three main areas — spec §6.2: Spaces, Chats, Profile/Settings.
 const tabs = [
-  { href: "/spaces", label: "Spaces", icon: "🏛️" },
-  { href: "/chats", label: "Chats", icon: "💬" },
-  { href: "/profile", label: "Profile", icon: "👤" },
+  { href: "/spaces", label: "Feed", icon: "M4 4h16v6H4z M4 14h16v6H4z" },
+  { href: "/chats", label: "Chats", icon: "M21 11a8 8 0 0 1-8 8H6l-4 3 1-7a8 8 0 1 1 18-4Z" },
+  { href: "/profile", label: "Profile", icon: "M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0ZM4 21v-2a8 8 0 0 1 16 0v2" },
 ];
 
 export default function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 border-t border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
-      <div className="mx-auto flex max-w-lg">
+    <nav className="workspace-nav" aria-label="Main navigation">
+      <div>
         {tabs.map((tab) => {
-          const active = pathname.startsWith(tab.href);
+          const active = pathname.startsWith(tab.href) || (tab.href === "/profile" && pathname === "/settings");
           return (
             <Link
               key={tab.href}
               href={tab.href}
-              className={`flex flex-1 flex-col items-center gap-0.5 py-2 text-xs ${
-                active
-                  ? "font-semibold text-emerald-600 dark:text-emerald-400"
-                  : "text-zinc-500 dark:text-zinc-400"
-              }`}
+              className="workspace-nav-link"
+              aria-current={active ? "page" : undefined}
             >
-              <span aria-hidden className="text-lg">{tab.icon}</span>
+              <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d={tab.icon} /></svg>
               {tab.label}
             </Link>
           );

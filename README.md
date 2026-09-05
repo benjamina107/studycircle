@@ -38,7 +38,14 @@ verification, foreign keys, uniqueness and isolation by course and professor.
 
 ## Implementation status
 
-The database schema is provisioned. Pages still use mock fixtures; signup/login UI,
-catalog import, Storage uploads and other feature integrations are separate work.
+The database schema is provisioned. Local auth and profile integration is implemented;
+real email verification remains to be tested. Catalog validation is available offline.
+Meetup and chat previews use sample data at `/preview/meetups` and `/preview/chat`;
+their persistence, catalog import and Storage uploads remain separate work.
 Custom SMTP and a real Cal Poly email-verification test remain pending. See
 [product specification](docs/productspec.md) and the repository issues.
+
+Offline checks: `npm run test:auth`, `npm run test:catalog`, and
+`npm run catalog:validate -- docs/catalog-demo.json`. See
+[meetup preview](docs/meetups-preview.md), [chat preview](docs/chat-preview.md),
+and [catalog format](docs/catalog-format.md).

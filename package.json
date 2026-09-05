@@ -10,7 +10,14 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "db:check": "node scripts/check-supabase.mjs"
+    "db:check": "node scripts/check-supabase.mjs",
+    "typecheck": "next typegen && tsc --noEmit",
+    "test:database": "node --test tests/*.test.mjs",
+    "test:auth": "tsx --test src/app/api/auth/*.test.ts",
+    "test:auth:smoke": "node scripts/check-auth.mjs",
+    "test:feed": "tsx --test src/lib/feed*.test.ts",
+    "catalog:validate": "tsx scripts/catalog-validate.ts",
+    "test:catalog": "tsx --test src/lib/catalog-validation.test.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.6",
@@ -29,6 +36,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.3.4",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "tsx": "^4.23.13"
   }
 }

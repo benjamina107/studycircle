@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 // TODO(email): call sendTestEmail(user.email) once auth + email exist.
 export async function POST() {
   return NextResponse.json(
-    { error: "Email sending not implemented yet" },
+    { error: "Test email is unavailable. No email was sent." },
     { status: 501 }
   );
 }
