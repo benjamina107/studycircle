@@ -1,0 +1,243 @@
+// StudyCircle domain model — see docs/productspec.md §5 (Core concepts).
+// SQLite for zero-friction local dev (no enums; string fields note their
+// allowed values). Swap the datasource + adapter for Postgres in production.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// ---------- Users & auth ----------
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique // must end in @calpoly.edu (enforced in app code)
+  emailVerified DateTime?
+  name          String?
+  major         String?
+  interests     String? // comma-separated for now; revisit with notes-privacy open question
+  avatarUrl     String?
+  createdAt     DateTime @default(now())
+
+  enrollments          Enrollment[]
+  messages             Message[]
+  meetupsCreated       Meetup[]             @relation("MeetupCreator")
+  meetupAttendances    MeetupAttendee[]
+  notes                Note[]
+  notificationSettings NotificationSetting[]
+}
+
+model VerificationToken {
+  token     String   @id
+  email     String
+  expiresAt DateTime
+}
+
+// ---------- Catalog (prefetched from Cal Poly — open question #1) ----------
+
+model Course {
+  id     String @id @default(cuid())
+  code   String // e.g. "CSC 202"
+  title  String
+  term   String // e.g. "Fall 2026"
+  spaces Space[]
+  sections Section[]
+
+  @@unique([code, term])
+}
+
+model Professor {
+  id        String     @id @default(cuid())
+  name      String
+  sections  Section[]
+  subspaces Subspace[]
+}
+
+model Section {
+  id           String  @id @default(cuid())
+  courseId     String
+  professorId  String
+  sectionCode  String // e.g. "03"
+  days         String // e.g. "MWF"
+  startTime    String? // "HH:MM"
+  endTime      String?
+  location     String?
+
+  course      Course       @relation(fields: [courseId], references: [id])
+  professor   Professor    @relation(fields: [professorId], references: [id])
+  enrollments Enrollment[]
+
+  @@unique([courseId, sectionCode])
+}
+
+model Enrollment {
+  userId    String
+  sectionId String
+  user      User    @relation(fields: [userId], references: [id])
+  section   Section @relation(fields: [sectionId], references: [id])
+
+  @@id([userId, sectionId])
+}
+
+// ---------- Spaces / Subspaces / Channels ----------
+
+// One Space per course per term; predefined from the catalog, never user-created.
+model Space {
+  id        String     @id @default(cuid())
+  courseId  String
+  course    Course     @relation(fields: [courseId], references: [id])
+  subspaces Subspace[]
+
+  @@unique([courseId])
+}
+
+// One Subspace per professor within a Space (not per section — spec §5).
+model Subspace {
+  id          String @id @default(cuid())
+  spaceId     String
+  professorId String
+
+  space          Space           @relation(fields: [spaceId], references: [id])
+  professor      Professor       @relation(fields: [professorId], references: [id])
+  channels       Channel[]
+  meetups        Meetup[]
+  lectureFolders LectureFolder[]
+  courseSchedule CourseSchedule?
+
+  @@unique([spaceId, professorId])
+}
+
+// Predefined channels only (spec §9: no user-created channels).
+model Channel {
+  id         String    @id @default(cuid())
+  subspaceId String
+  name       String // e.g. "general", "homework"
+  subspace   Subspace  @relation(fields: [subspaceId], references: [id])
+  messages   Message[]
+
+  @@unique([subspaceId, name])
+}
+
+model Message {
+  id           String   @id @default(cuid())
+  channelId    String
+  authorId     String? // null for @ClassAI replies
+  body         String
+  isAiResponse Boolean  @default(false)
+  meetupId     String? // set when this message pins a meetup's location/time widget
+  createdAt    DateTime @default(now())
+
+  channel Channel @relation(fields: [channelId], references: [id])
+  author  User?   @relation(fields: [authorId], references: [id])
+  meetup  Meetup? @relation(fields: [meetupId], references: [id])
+}
+
+// ---------- Meetups ----------
+
+// A meetup is a location + time posting, NOT its own group chat (spec §9).
+model Meetup {
+  id           String   @id @default(cuid())
+  subspaceId   String
+  creatorId    String
+  title        String
+  blurb        String?
+  locationName String
+  lat          Float?
+  lng          Float?
+  startsAt     DateTime
+  createdAt    DateTime @default(now())
+
+  subspace  Subspace         @relation(fields: [subspaceId], references: [id])
+  creator   User             @relation("MeetupCreator", fields: [creatorId], references: [id])
+  attendees MeetupAttendee[]
+  messages  Message[]
+}
+
+model MeetupAttendee {
+  meetupId String
+  userId   String
+  joinedAt DateTime @default(now())
+
+  meetup Meetup @relation(fields: [meetupId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@id([meetupId, userId])
+}
+
+// ---------- Notes & AI ----------
+
+// One folder per class session, auto-generated from the section schedule.
+model LectureFolder {
+  id         String   @id @default(cuid())
+  subspaceId String
+  date       DateTime
+  title      String? // e.g. "Lecture 7 — Hash tables"
+
+  subspace Subspace        @relation(fields: [subspaceId], references: [id])
+  notes    Note[]
+  summary  LectureSummary?
+
+  @@unique([subspaceId, date])
+}
+
+model Note {
+  id              String   @id @default(cuid())
+  lectureFolderId String
+  uploaderId      String
+  fileName        String
+  fileUrl         String
+  mimeType        String
+  createdAt       DateTime @default(now())
+
+  lectureFolder LectureFolder @relation(fields: [lectureFolderId], references: [id])
+  uploader      User          @relation(fields: [uploaderId], references: [id])
+}
+
+model LectureSummary {
+  id              String   @id @default(cuid())
+  lectureFolderId String   @unique
+  content         String
+  generatedAt     DateTime @default(now())
+
+  lectureFolder LectureFolder @relation(fields: [lectureFolderId], references: [id])
+}
+
+// One schedule per professor per term, shared across their sections (spec §6.6).
+model CourseSchedule {
+  id         String   @id @default(cuid())
+  subspaceId String   @unique
+  rawFileUrl String? // uploaded syllabus/schedule file
+  uploadedAt DateTime @default(now())
+
+  subspace Subspace       @relation(fields: [subspaceId], references: [id])
+  items    ScheduleItem[]
+}
+
+// Parsed from the syllabus by AI; dates are tentative and editable.
+model ScheduleItem {
+  id           String   @id @default(cuid())
+  scheduleId   String
+  type         String // "EXAM" | "QUIZ" | "TOPIC" | "OTHER"
+  title        String
+  date         DateTime
+  isCumulative Boolean? // exams only
+  topics       String?
+
+  schedule CourseSchedule @relation(fields: [scheduleId], references: [id])
+}
+
+// ---------- Notifications (email-based, spec §6.7) ----------
+
+model NotificationSetting {
+  userId       String
+  event        String // "MEETUP_JOIN" | "NEW_MESSAGE" | "MENTION" | "EXAM_REMINDER"
+  emailEnabled Boolean @default(true)
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@id([userId, event])
+}
