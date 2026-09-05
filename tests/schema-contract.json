@@ -1,0 +1,116 @@
+{
+  "profiles": {
+    "id": "uuid",
+    "email": "text",
+    "name": "text",
+    "major": "text",
+    "interests": "text",
+    "avatar_url": "text",
+    "created_at": "timestamp with time zone"
+  },
+  "courses": {
+    "id": "text",
+    "code": "text",
+    "title": "text",
+    "term": "text"
+  },
+  "professors": {
+    "id": "text",
+    "name": "text"
+  },
+  "sections": {
+    "id": "text",
+    "course_id": "text",
+    "professor_id": "text",
+    "section_code": "text",
+    "days": "text",
+    "start_time": "text",
+    "end_time": "text",
+    "location": "text"
+  },
+  "enrollments": {
+    "user_id": "uuid",
+    "section_id": "text"
+  },
+  "spaces": {
+    "id": "text",
+    "course_id": "text"
+  },
+  "subspaces": {
+    "id": "text",
+    "space_id": "text",
+    "professor_id": "text"
+  },
+  "channels": {
+    "id": "text",
+    "subspace_id": "text",
+    "name": "text"
+  },
+  "messages": {
+    "id": "text",
+    "channel_id": "text",
+    "author_id": "uuid",
+    "body": "text",
+    "is_ai_response": "boolean",
+    "meetup_id": "text",
+    "created_at": "timestamp with time zone"
+  },
+  "meetups": {
+    "id": "text",
+    "subspace_id": "text",
+    "creator_id": "uuid",
+    "title": "text",
+    "blurb": "text",
+    "location_name": "text",
+    "lat": "double precision",
+    "lng": "double precision",
+    "starts_at": "timestamp with time zone",
+    "created_at": "timestamp with time zone"
+  },
+  "meetup_attendees": {
+    "meetup_id": "text",
+    "user_id": "uuid",
+    "joined_at": "timestamp with time zone"
+  },
+  "lecture_folders": {
+    "id": "text",
+    "subspace_id": "text",
+    "date": "timestamp with time zone",
+    "title": "text"
+  },
+  "notes": {
+    "id": "text",
+    "lecture_folder_id": "text",
+    "uploader_id": "uuid",
+    "file_name": "text",
+    "file_url": "text",
+    "mime_type": "text",
+    "created_at": "timestamp with time zone"
+  },
+  "lecture_summaries": {
+    "id": "text",
+    "lecture_folder_id": "text",
+    "content": "text",
+    "generated_at": "timestamp with time zone"
+  },
+  "course_schedules": {
+    "id": "text",
+    "subspace_id": "text",
+    "raw_file_url": "text",
+    "uploaded_at": "timestamp with time zone"
+  },
+  "schedule_items": {
+    "id": "text",
+    "schedule_id": "text",
+    "type": "text",
+    "title": "text",
+    "date": "timestamp with time zone",
+    "is_cumulative": "boolean",
+    "topics": "text"
+  },
+  "notification_settings": {
+    "user_id": "uuid",
+    "event": "text",
+    "email_enabled": "boolean"
+  }
+}
