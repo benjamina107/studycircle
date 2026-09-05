@@ -63,7 +63,7 @@ export async function createMeetupAction(
   } catch (error) {
     throw error instanceof Error ? error : new Error("Enter a valid date, time, and time zone.");
   }
-  const { error } = await supabase.from("meetups").insert({
+  const meetup = {
     subspace_id: subspaceId,
     creator_id: user.id,
     title,
@@ -73,8 +73,20 @@ export async function createMeetupAction(
     lng,
     starts_at: startsAtIso,
     time_zone: timeZone,
-  });
-  if (error) throw new Error(error.message);
+  };
+  let { data: created, error } = await supabase.from("meetups").insert(meetup).select("id").single();
+  if (error?.message.includes("time_zone")) {
+    // Compatibility for databases that have not received migration 003 yet.
+    const { time_zone: _timeZone, ...legacyMeetup } = meetup;
+    ({ data: created, error } = await supabase.from("meetups").insert(legacyMeetup).select("id").single());
+  }
+  if (error || !created) throw new Error(error?.message ?? "Could not create meetup.");
+  // Migration 003 does this in a trigger; upsert keeps older databases usable.
+  const { error: attendeeError } = await supabase.from("meetup_attendees").upsert(
+    { meetup_id: created.id, user_id: user.id },
+    { onConflict: "meetup_id,user_id", ignoreDuplicates: true },
+  );
+  if (attendeeError) throw new Error(attendeeError.message);
   revalidatePath(`/spaces/${spaceId}/${subspaceId}/meetups`);
   revalidatePath("/chats");
 }

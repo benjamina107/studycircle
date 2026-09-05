@@ -9,6 +9,17 @@ alter table public.meetups
 create index meetups_subspace_starts_idx on public.meetups(subspace_id, starts_at);
 create index meetups_creator_created_idx on public.meetups(creator_id, created_at);
 
+-- This counter is intentionally separate from meetups: an atomic UPSERT is
+-- portable and prevents concurrent inserts from bypassing the daily cap.
+create table public.meetup_daily_post_limits (
+  creator_id uuid not null references public.profiles(id) on delete cascade,
+  post_date date not null,
+  post_count integer not null default 0 check (post_count >= 0 and post_count <= 5),
+  primary key (creator_id, post_date)
+);
+alter table public.meetup_daily_post_limits enable row level security;
+revoke all on public.meetup_daily_post_limits from public, anon, authenticated;
+
 create function public.validate_meetup()
 returns trigger language plpgsql security definer set search_path = '' as $$
 begin
@@ -41,13 +52,15 @@ revoke all on function public.validate_meetup() from public, anon, authenticated
 
 create function public.enforce_meetup_post_limit()
 returns trigger language plpgsql security definer set search_path = '' as $$
+declare allowed_count integer;
 begin
-  -- Serialize posts per creator, so concurrent requests cannot pass the count together.
-  perform pg_advisory_xact_lock(hashtextextended(new.creator_id::text, 4));
-  if (select count(*) from public.meetups
-      where creator_id = new.creator_id
-        and created_at >= date_trunc('day', now())
-        and created_at < date_trunc('day', now()) + interval '1 day') >= 5 then
+  insert into public.meetup_daily_post_limits as limits (creator_id, post_date, post_count)
+  values (new.creator_id, (now() at time zone 'UTC')::date, 1)
+  on conflict (creator_id, post_date) do update
+    set post_count = limits.post_count + 1
+    where limits.post_count < 5
+  returning post_count into allowed_count;
+  if allowed_count is null then
     raise exception 'You can create at most 5 meetups per day' using errcode = 'P0001';
   end if;
   return new;
@@ -68,7 +81,7 @@ revoke all on function public.add_meetup_creator_as_attendee() from public, anon
 
 create trigger validate_meetup before insert or update on public.meetups
 for each row execute function public.validate_meetup();
-create trigger enforce_meetup_post_limit before insert on public.meetups
+create trigger z_enforce_meetup_post_limit before insert on public.meetups
 for each row execute function public.enforce_meetup_post_limit();
 create trigger add_meetup_creator_as_attendee after insert on public.meetups
 for each row execute function public.add_meetup_creator_as_attendee();

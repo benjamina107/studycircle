@@ -10,16 +10,42 @@ type MeetupRow = {
   meetup_attendees: { user_id: string; profile: { name: string; avatar_url: string | null } | null }[];
 };
 
+type EnrollmentRow = { section: { course_id: string; professor_id: string } | null };
+
 export default async function MeetupsPage(props: PageProps<"/spaces/[spaceId]/[subspaceId]/meetups">) {
   const { spaceId, subspaceId } = await props.params;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
-  const { data, error } = await supabase.from("meetups").select(`
+  const [{ data: subspace }, { data: enrollments }] = await Promise.all([
+    supabase.from("subspaces").select("space_id, professor_id").eq("id", subspaceId).maybeSingle(),
+    supabase.from("enrollments").select("section:sections(course_id, professor_id)").eq("user_id", user.id),
+  ]);
+  const { data: space } = subspace
+    ? await supabase.from("spaces").select("course_id").eq("id", subspace.space_id).maybeSingle()
+    : { data: null };
+  const isMember = Boolean(space && (enrollments as unknown as EnrollmentRow[] | null)?.some(({ section }) =>
+    section?.course_id === space.course_id && section?.professor_id === subspace?.professor_id,
+  ));
+  if (!isMember) {
+    return <main className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">You need to enroll in this course section before you can view or create its meetups.</main>;
+  }
+  const select = `
     id, title, blurb, location_name, lat, lng, starts_at, time_zone, creator_id,
     creator:profiles!meetups_creator_id_fkey(id, name, avatar_url),
     meetup_attendees(user_id, profile:profiles!meetup_attendees_user_id_fkey(name, avatar_url))
-  `).eq("subspace_id", subspaceId).gt("starts_at", new Date().toISOString()).order("starts_at");
+  `;
+  const first = await supabase.from("meetups").select(select).eq("subspace_id", subspaceId).gt("starts_at", new Date().toISOString()).order("starts_at");
+  let data: unknown[] | null = first.data;
+  let error = first.error;
+  if (error?.message.includes("time_zone")) {
+    // The shared project may still be running the pre-#4 schema. Keep existing
+    // meetups readable while migration 202609050003 is applied.
+    const legacy = await supabase.from("meetups").select(select.replace(", time_zone", "")).eq("subspace_id", subspaceId).gt("starts_at", new Date().toISOString()).order("starts_at");
+    data = legacy.data;
+    error = legacy.error;
+    data = (data ?? []).map((meetup) => ({ ...(meetup as object), time_zone: "America/Los_Angeles" }));
+  }
   if (error) throw new Error(error.message);
   const meetups = (data ?? []) as unknown as MeetupRow[];
 
