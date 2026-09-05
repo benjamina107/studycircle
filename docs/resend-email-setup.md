@@ -2,11 +2,10 @@
 
 ## Status
 
-Prepared configuration only: Resend is not enabled on the shared project yet.
-A verified sending domain and a Resend API key are required. The team does not
-currently have a sending domain, so delivery to arbitrary Cal Poly addresses
-cannot be enabled or tested yet. This document does not fix the live rate limit
-by itself.
+Resend reports `studycircles.me` as verified. The domain is registered through
+Namecheap. The shared project's SMTP form is prepared with the settings below;
+credential entry, saving, and a real verification-email test remain pending.
+This document does not enable hosted SMTP by itself.
 
 Supabase Auth continues to create and validate confirmation tokens and manage
 sessions. Resend replaces Supabase's built-in email delivery service through
@@ -27,7 +26,7 @@ API key. Never mark a student verified merely because Resend accepted an email.
    | Setting | Value |
    | --- | --- |
    | Sender name | StudyCircle |
-   | Sender email | An address on your Resend-verified domain |
+   | Sender email | `noreply@studycircles.me` |
    | Host | `smtp.resend.com` |
    | Port | `465` |
    | Username | `resend` |
