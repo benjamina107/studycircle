@@ -149,12 +149,16 @@ model Meetup {
   lat          Float?
   lng          Float?
   startsAt     DateTime
+  timeZone     String   // IANA zone captured when the meetup is created, e.g. "America/Los_Angeles"
   createdAt    DateTime @default(now())
 
   subspace  Subspace         @relation(fields: [subspaceId], references: [id])
   creator   User             @relation("MeetupCreator", fields: [creatorId], references: [id])
   attendees MeetupAttendee[]
   messages  Message[]
+
+  @@index([subspaceId, startsAt])
+  @@index([creatorId, createdAt])
 }
 
 model MeetupAttendee {
