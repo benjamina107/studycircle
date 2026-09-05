@@ -1,0 +1,29 @@
+name: Feature
+description: A scoped StudyCircle feature with completion criteria
+title: "[Feature] "
+body:
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Student outcome
+      description: What should a student be able to do?
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope and acceptance criteria
+      description: Include product spec section and concrete checks.
+      placeholder: "- [ ] ..."
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies
+      description: Link blocking issues and note work that can run concurrently.
+  - type: textarea
+    id: validation
+    attributes:
+      label: Validation
+      description: How will we verify the feature, permissions, and failure states?

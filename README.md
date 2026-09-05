@@ -38,8 +38,17 @@ verification, foreign keys, uniqueness and isolation by course and professor.
 
 ## Implementation status
 
-The database schema is provisioned. Pages still use mock fixtures; signup/login UI,
-catalog import, Storage uploads and other feature integrations are separate work.
-The Resend sending domain `studycircles.me` is verified. Saving custom SMTP credentials
-and a real Cal Poly email-verification test remain pending; see [Resend setup](docs/resend-email-setup.md). See
+The database schema is provisioned. Local auth and profile integration is implemented;
+Catalog validation is available offline.
+Meetup and chat previews use sample data at `/preview/meetups` and `/preview/chat`;
+their persistence, catalog import and Storage uploads remain separate work.
+Resend SMTP sends from the verified domain `studycircles.me`. A real Cal Poly
+verification email was delivered and the user confirmed their test worked;
+the message landed in Junk, so inbox placement remains an improvement area.
+See [Resend setup and validation](docs/resend-email-setup.md),
 [product specification](docs/productspec.md) and the repository issues.
+
+Offline checks: `npm run test:auth`, `npm run test:catalog`, and
+`npm run catalog:validate -- docs/catalog-demo.json`. See
+[meetup preview](docs/meetups-preview.md), [chat preview](docs/chat-preview.md),
+and [catalog format](docs/catalog-format.md).

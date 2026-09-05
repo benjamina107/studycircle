@@ -1,16 +1,6 @@
-import Link from "next/link";
-import SignupForm from "@/components/SignupForm";
-
+import AuthForm from "@/components/AuthForm";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
 export default function SignupPage() {
-  return (
-    <div>
-      <SignupForm />
-      <p className="text-center text-sm text-zinc-500">
-        Already have an account?{" "}
-        <Link href="/login" className="font-medium text-emerald-600">
-          Log in
-        </Link>
-      </p>
-    </div>
-  );
+  if (!isSupabaseConfigured()) return <p role="status">Signup is currently unavailable. Please try again later.</p>;
+  return <AuthForm mode="signup" />;
 }

@@ -10,19 +10,21 @@ export default async function SpacePage(props: PageProps<"/spaces/[spaceId]">) {
 
   return (
     <main>
-      <h1 className="mb-1 text-xl font-bold">{space.code}</h1>
-      <p className="mb-4 text-zinc-500">{space.title}</p>
-      <h2 className="mb-2 text-sm font-semibold uppercase text-zinc-500">
+      <Link href="/spaces" className="workspace-back">← Spaces</Link>
+      <header className="page-heading"><h1>{space.code}</h1><p>{space.title}</p></header>
+      <p className="workspace-notice">Sample course. Select a professor group to explore the available previews.</p>
+      <h2 className="workspace-section-title">
         Professors
       </h2>
-      <ul className="flex flex-col gap-3">
+      <ul className="course-grid">
         {space.subspaces.map((sub) => (
           <li key={sub.id}>
             <Link
               href={`/spaces/${space.id}/${sub.id}`}
-              className="block rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
+              className="course-card"
             >
               {sub.professorName}
+              <span className="course-card-footer">Open group →</span>
             </Link>
           </li>
         ))}

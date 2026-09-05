@@ -1,0 +1,62 @@
+.workspace { min-height: 100dvh; background: #f8f7f2; color: #253d33; color-scheme: light; font-family: var(--font-geist-sans), Arial, sans-serif; }
+.workspace-header { height: 82px; padding: 0 40px; border-bottom: 1px solid #e2e3d9; display: flex; align-items: center; justify-content: space-between; background: #fffefa; }
+.workspace-brand { font-size: 23px; font-weight: 600; letter-spacing: -1px; display: flex; align-items: center; gap: 9px; }
+.workspace-brand span { font-size: 33px; font-weight: 400; }
+.workspace-campus { font-size: 12px; color: #626d60; }
+.workspace-layout { display: grid; grid-template-columns: 208px minmax(0, 1fr); max-width: 1440px; margin: auto; }
+.workspace-sidebar { padding: 32px 20px; border-right: 1px solid #e2e3d9; min-height: calc(100dvh - 82px); }
+.workspace-nav > div { display: grid; gap: 8px; }
+.workspace-nav-link { display: flex; align-items: center; gap: 12px; padding: 13px 16px; border-radius: 9px; font-size: 14px; color: #626d60; min-height: 48px; }
+.workspace-nav-link:hover { background: #eeefe6; }
+.workspace-nav-link[aria-current] { background: #e6ebde; color: #304b3b; font-weight: 600; }
+.workspace-content { padding: 46px 48px 70px; min-width: 0; max-width: 1150px; width: 100%; }
+.page-heading { margin-bottom: 30px; }
+.page-heading h1 { font-size: 32px; font-weight: 550; letter-spacing: -1px; line-height: 1.2; }
+.page-heading p { color: #697365; margin-top: 10px; font-size: 14px; line-height: 1.6; }
+.workspace-notice { font-size: 12px; color: #64705c; padding: 13px 16px; border: 1px solid #dce2d3; background: #eff2e9; border-radius: 9px; margin-bottom: 24px; line-height: 1.6; }
+.course-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 18px; }
+.course-card { display: flex; flex-direction: column; padding: 24px; border: 1px solid #dfe2d6; border-radius: 13px; background: #fffefa; min-height: 210px; transition: border-color .15s, background .15s; }
+.course-card:hover { border-color: #94a487; background: #fdfdf6; }
+.course-code { font-size: 12px; font-weight: 600; letter-spacing: .5px; display: flex; align-items: center; gap: 9px; color: #596d4d; }
+.course-code::before { content: ''; width: 8px; height: 8px; border-radius: 2px; background: #899d70; }
+.course-card h2 { font-size: 21px; letter-spacing: -.5px; font-weight: 500; margin-top: 18px; }
+.course-card-footer { display: flex; justify-content: space-between; margin-top: auto; padding-top: 26px; color: #6f7768; font-size: 12px; }
+.workspace-section-title { font-size: 14px; font-weight: 600; margin-bottom: 14px; }
+.workspace-panel { border: 1px solid #dfe2d6; background: #fffefa; border-radius: 12px; padding: 26px; }
+.profile-form { max-width: 620px; display: grid; gap: 22px; }
+.profile-identity { display: flex; gap: 14px; align-items: center; padding-bottom: 20px; border-bottom: 1px solid #e4e5dc; }
+.profile-avatar { height: 52px; width: 52px; border-radius: 50%; background: #e6ebde; display: grid; place-items: center; font-size: 18px; object-fit: cover; flex-shrink: 0; }
+.profile-identity strong { font-size: 15px; display: block; font-weight: 550; }
+.profile-identity p { font-size: 12px; color: #6b7565; overflow-wrap: anywhere; margin-top: 5px; }
+.workspace-field { display: grid; gap: 8px; font-size: 13px; font-weight: 500; }
+.workspace-input { width: 100%; background: #fffefa; border: 1px solid #d6dccf; border-radius: 8px; padding: 12px 14px; min-height: 46px; color: #253d33; font-size: 14px; font-weight: 400; }
+.workspace-hint { color: #6f7868; font-size: 12px; font-weight: 400; }
+.workspace-button { background: #304b3b; color: #fffefa; border-radius: 8px; min-height: 46px; padding: 11px 20px; font-size: 13px; font-weight: 550; cursor: pointer; justify-self: start; }
+.workspace-button:disabled { opacity: .5; cursor: wait; }
+.workspace-secondary { border: 1px solid #d6dccf; border-radius: 8px; padding: 11px 18px; min-height: 44px; font-size: 13px; cursor: pointer; }
+.profile-account { max-width: 620px; margin-top: 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.workspace-back { display: inline-block; font-size: 12px; color: #64705c; margin-bottom: 20px; text-decoration: underline; text-underline-offset: 4px; }
+.feed-heading { display: flex; justify-content: space-between; gap: 20px; align-items: center; flex-wrap: wrap; }
+.feed-list { display: grid; gap: 20px; max-width: 780px; }
+.feed-context { display: flex; align-items: center; gap: 10px 16px; flex-wrap: wrap; font-size: 12px; color: #6b7565; }
+.feed-post h2 { font-size: 23px; font-weight: 550; letter-spacing: -.5px; margin: 18px 0 12px; overflow-wrap: anywhere; }
+.feed-details { display: grid; gap: 6px; font-size: 13px; color: #596d4d; overflow-wrap: anywhere; }
+.feed-description { margin-top: 18px; font-size: 14px; line-height: 1.7; white-space: pre-wrap; overflow-wrap: anywhere; }
+.feed-post footer { margin-top: 22px; padding-top: 18px; border-top: 1px solid #e4e5dc; }
+.feed-rsvp { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.feed-badge { color: #3f613d; font-size: 12px; font-weight: 550; }
+.feed-tabs { display: flex; gap: 22px; border-bottom: 1px solid #dfe2d6; margin-bottom: 24px; font-size: 13px; }
+.feed-tabs a { padding: 12px 0; }
+.feed-tabs a[aria-current] { border-bottom: 2px solid #304b3b; font-weight: 600; }
+.feed-pagination { display: flex; gap: 12px; margin-top: 24px; }
+.profile-classes { max-width: 780px; margin-bottom: 28px; display: grid; gap: 18px; }
+.profile-classes .workspace-section-title, .profile-classes .workspace-notice { margin: 0; }
+.enrollment-list { display: grid; gap: 12px; }
+.enrollment-list li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 14px; border-bottom: 1px solid #e4e5dc; }
+.enrollment-list strong { font-size: 13px; font-weight: 550; }
+.enrollment-list p { font-size: 12px; color: #6b7565; margin-top: 5px; }
+.enrollment-add { display: grid; gap: 12px; }
+.enrollment-search { display: flex; align-items: end; gap: 12px; margin-bottom: 20px; max-width: 780px; }
+.enrollment-search label { flex: 1; min-width: 0; }
+.workspace :is(a, button, input, textarea):focus-visible { outline: 2px solid #637747; outline-offset: 3px; }
+@media(max-width: 760px) { .workspace-header { height: 66px; padding: 0 22px; } .workspace-layout { display: block; } .workspace-sidebar { min-height: 0; padding: 0; border: 0; } .workspace-nav { position: fixed; bottom: 0; left: 0; right: 0; z-index: 20; background: #fffefa; border-top: 1px solid #dfe2d6; padding: 7px 12px calc(7px + env(safe-area-inset-bottom)); } .workspace-nav > div { display: flex; } .workspace-nav-link { flex: 1; justify-content: center; flex-direction: column; gap: 4px; font-size: 11px; padding: 8px; } .workspace-content { padding: 30px 22px 110px; } .page-heading h1 { font-size: 28px; } .course-grid { grid-template-columns: 1fr; } .course-card { min-height: 175px; padding: 22px; } .workspace-panel { padding: 20px; } }
