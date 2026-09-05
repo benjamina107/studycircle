@@ -1,51 +1,44 @@
 # StudyCircle
 
-A mobile-friendly web app for Cal Poly students where every class is a predefined **Space** with group chat, in-person **meetups**, shared lecture notes, and an AI that actually knows what the professor taught.
+A mobile-friendly web app for Cal Poly students: course spaces, professor subspaces,
+chat, study meetups, lecture notes, AI summaries and notification preferences.
 
-Full product spec: [docs/productspec.md](docs/productspec.md)
+## Stack and setup
 
-## Stack
+Next.js 16 (App Router, TypeScript), React 19, Tailwind 4, and Supabase Auth/Postgres.
+Copy `.env.example` to `.env.local` and set the shared project's URL and publishable
+key from its Connect dialog. Never expose secret/service-role credentials.
 
-- **Next.js 16** (App Router, TypeScript) + **Tailwind CSS 4**
-- **Prisma 7** + SQLite for local dev (via `better-sqlite3` driver adapter); swap the datasource for Postgres in production
-- AI + email layers are stubbed in `src/lib/` until their open questions are settled
-
-## Getting started
-
-```bash
-npm install            # runs prisma generate via postinstall
-cp .env.example .env
-npm run db:push        # create/update dev.db from prisma/schema.prisma
+```sh
+npm install
 npm run dev
 ```
 
-Open http://localhost:3000 — you'll land on `/spaces` (auth isn't wired up yet).
+The shared development database already has both versioned migrations applied.
+For another project, follow [team setup](docs/supabase-setup.md). Do not reset the
+shared database or rerun its applied initial migration.
 
-## Layout
+## Database and validation
 
-```
-docs/productspec.md         product spec (source of truth)
-prisma/schema.prisma        domain model: User, Course/Section/Professor,
-                            Space → Subspace → Channel, Meetup, LectureFolder,
-                            Note, schedules, notification settings
-src/lib/
-  db.ts                     Prisma client (v7 driver-adapter style)
-  catalog.ts                Cal Poly catalog prefetch — open question #1, stub
-  classai.ts                lecture summaries, Q&A, syllabus parsing — stubs
-  email.ts                  verification + notification emails — stubs
-  mock-data.ts              placeholder data until pages query the DB
-src/app/
-  (auth)/                   login, signup, verify (placeholder forms)
-  (app)/spaces/             Spaces → Subspace (per professor) → chat / meetups / lectures
-  (app)/chats/              joined meetups + channels
-  (app)/profile, settings/  profile + email-notification settings
-  api/notifications/test/   "send test notification" endpoint (501 stub)
+There are 17 application tables plus Supabase-managed Auth tables. See
+[database inventory](docs/database-migration.md) for every model/field mapping and
+[profile integration](docs/supabase-profile-handoff.md) for the auth contract.
+
+```sh
+npm test
+npm run check:supabase
+npm run lint
+npm run build
 ```
 
-## Roadmap (spec §10)
+Migrations live in `supabase/migrations/`. Browser/server Supabase clients live in
+`src/lib/supabase/`; `src/proxy.ts` refreshes cookies. The public-key connection check
+verifies all tables reject anonymous access. Database tests cover ownership,
+verification, foreign keys, uniqueness and isolation by course and professor.
 
-1. **Now (scaffolded):** auth, catalog, Spaces/Subspaces, one chat channel, meetups, notes upload
-2. **Next:** per-lecture AI summaries, `@ClassAI` in chat
-3. **Then:** syllabus parsing, exam banners, practice tests, notification settings
+## Implementation status
 
-Key blocker: how the course catalog gets prefetched (API vs. scrape) — spec §8, open question #1.
+The database schema is provisioned. Pages still use mock fixtures; signup/login UI,
+catalog import, Storage uploads and other feature integrations are separate work.
+Custom SMTP and a real Cal Poly email-verification test remain pending. See
+[product specification](docs/productspec.md) and the repository issues.
