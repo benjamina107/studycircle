@@ -40,5 +40,6 @@ verification, foreign keys, uniqueness and isolation by course and professor.
 
 The database schema is provisioned. Pages still use mock fixtures; signup/login UI,
 catalog import, Storage uploads and other feature integrations are separate work.
-Custom SMTP and a real Cal Poly email-verification test remain pending. See
+Resend custom SMTP and a real Cal Poly email-verification test remain pending
+until a sending domain is verified; see [Resend setup](docs/resend-email-setup.md). See
 [product specification](docs/productspec.md) and the repository issues.

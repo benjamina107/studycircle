@@ -15,7 +15,7 @@ The shared studyCircle development project (`zmtwlnmikhxfsbdtbtax`) has the prof
 4. Enable email/password signup and **Confirm email** in Authentication. Set the password minimum to 12 characters to match the app. Keep anonymous sign-ins disabled.
 5. Set Site URL to `http://localhost:3000` for development. Allow `http://localhost:3000/api/auth/callback` and `http://localhost:3000/verify` under Redirect URLs. Add the exact HTTPS equivalents before deployment.
 6. Set the confirmation email link to `{{ .SiteURL }}/verify?token_hash={{ .TokenHash }}&type=email`. The planned verification page must require a click before consuming the token; wire this template when that UI and SMTP are available. This template uses Site URL; use a separate staging project to test a different deployment origin.
-7. Configure **custom SMTP** before student testing. Supabase's default sender is restricted to team-authorized recipient addresses; arbitrary student addresses need a configured sender. Supabase sends verification email directly.
+7. Configure **Resend custom SMTP** before student testing using [the Resend setup guide](resend-email-setup.md). Resend delivers the email; Supabase Auth creates and validates verification tokens. A verified sending domain is required and is currently missing, so this cutover remains pending. Supabase's built-in sender is limited to team-authorized recipients and two emails per hour.
 
 The database rejects non-`@calpoly.edu` accounts even if signup bypasses our app. Apply this initial migration to a fresh project; if reusing a project with existing users/tables, review compatibility first.
 
