@@ -20,8 +20,8 @@
     "test:catalog": "tsx --test src/lib/catalog-validation.test.ts"
   },
   "dependencies": {
-    "@supabase/ssr": "^0.12.6",
-    "@supabase/supabase-js": "^2.115.0",
+    "@supabase/ssr": "^0.12.5",
+    "@supabase/supabase-js": "^2.112.4",
     "next": "16.3.4",
     "react": "19.2.8",
     "react-dom": "19.2.8"
