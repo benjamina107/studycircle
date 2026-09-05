@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
+import { getCurrentUser } from "@/lib/auth";
 
-// TODO(auth): send signed-out users to /login once auth exists.
-export default function Home() {
-  redirect("/spaces");
+export default async function Home() {
+  redirect(await getCurrentUser() ? "/profile" : "/login");
 }
