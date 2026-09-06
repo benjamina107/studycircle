@@ -7,6 +7,7 @@ import type { ChatChannelId } from '@/lib/chat-demo';
 import styles from '@/components/chat/ChatDemo.module.css';
 import ui from './Study.module.css';
 import { useFillViewport } from '@/lib/use-fill-viewport';
+type StudyChannel=ChatChannelId|'ai';
 type Message={id:string;author_id:string|null;role:'user'|'assistant';body:string;payload:AnswerPayload|null;ai_status:string;error:string|null;created_at:string};
 type Upload={id:string;file_name:string;description:string;uploader_id:string;byte_size:number;created_at:string;kb_assets:{status:string;error:string|null}};
 async function api<T>(url:string,options?:RequestInit):Promise<T> {
@@ -148,7 +149,7 @@ export function Notes({subspace,userId}:{subspace:string;userId:string}) {
   <RemoveFileDialog error={failed?message:undefined} id={confirm} pending={pending} onCancel={()=>setConfirm(null)} onRemove={()=>confirm&&void change(confirm,'DELETE')}/>
  </section>;
 }
-function Conversation({subspace,channel,userId,invites}:{subspace:string;channel:ChatChannelId;userId:string;invites:ChatInvite[]}) {
+function Conversation({subspace,channel,userId,invites}:{subspace:string;channel:StudyChannel;userId:string;invites:ChatInvite[]}) {
  const url=`/api/study/messages?class=${encodeURIComponent(subspace)}&channel=${channel}`;
  const {data,error,refresh}=usePoll<{messages:Message[]}>(url);
  const [draft,setDraft]=useState('');const [pending,setPending]=useState(false);const [failure,setFailure]=useState('');const [retryId,setRetryId]=useState<string|null>(null);
@@ -183,7 +184,7 @@ function Conversation({subspace,channel,userId,invites}:{subspace:string;channel
    {channel==='meetups'&&invites.map(invite=><article className={styles.invite} key={invite.id}><h3>{invite.title}</h3><p>{invite.when} · {invite.location}</p><FeedRsvp {...invite}/></article>)}
    {error&&<p role="alert" className={styles.error}>{error}</p>}
    {!data&&!error&&<p>Loading messages…</p>}
-   {data?.messages.length===0&&<p className={styles.empty}>Start a conversation. Mention @Circle AI to ask about shared notes or request Quizlet cards.</p>}
+   {data?.messages.length===0&&<p className={styles.empty}>{channel==='ai'?'Your private conversation with Circle AI. Ask about shared class notes or request practice cards—no mention needed.':'Start a conversation. Mention @Circle AI to ask about shared notes or request Quizlet cards.'}</p>}
    <ol className={styles.messages}>{data?.messages.map(m=><li key={m.id} className={styles.message}>
     <span className={styles.avatar} aria-hidden="true">{m.role==='assistant'?'AI':m.author_id===userId?'Y':'C'}</span><div className={styles.messageBody}>
      <div className={styles.messageMeta}><strong>{m.role==='assistant'?'Circle AI':m.author_id===userId?'You':'Classmate'}</strong><span>{new Date(m.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</span></div>
@@ -195,7 +196,7 @@ function Conversation({subspace,channel,userId,invites}:{subspace:string;channel
   <form onSubmit={submit} className={styles.composer}><label htmlFor="study-draft">Message #{channel}</label>
    <div className={ui.composerInput}>
    {mention&&<div className={ui.mention} id="ai-mention-hint"><button type="button" onMouseDown={e=>e.preventDefault()} onClick={insertMention}><span className={ui.mentionAvatar} aria-hidden="true">AI</span><span><strong>Circle AI <small>@Circle AI</small></strong></span><span className={ui.mentionKey}>Enter ↵</span></button><span className={ui.srOnly} role="status">Circle AI suggestion available. Press Enter or Tab to mention AI. Escape dismisses.</span></div>}
-   <textarea ref={composer} rows={1} id="study-draft" value={draft} disabled={pending} maxLength={2000} aria-describedby={mention?'ai-mention-hint':undefined} placeholder="Message your class, or @Circle AI make 20 cards about HW 3…" onSelect={e=>setCaret(e.currentTarget.selectionStart)} onChange={e=>{setDraft(e.target.value);setCaret(e.target.selectionStart);setMentionDismissed(false);setRetryId(null);}} onKeyDown={e=>{
+   <textarea ref={composer} rows={1} id="study-draft" value={draft} disabled={pending} maxLength={2000} aria-describedby={mention?'ai-mention-hint':undefined} placeholder={channel==='ai'?'Ask Circle AI about your class…':'Message your class, or @Circle AI make 20 cards about HW 3…'} onSelect={e=>setCaret(e.currentTarget.selectionStart)} onChange={e=>{setDraft(e.target.value);setCaret(e.target.selectionStart);setMentionDismissed(false);setRetryId(null);}} onKeyDown={e=>{
     if(e.nativeEvent.isComposing)return;
     if(mention&&e.key==='Escape'){e.preventDefault();setMentionDismissed(true);return;}
     if(mention&&(e.key==='Enter'||e.key==='Tab')&&!e.shiftKey&&!e.ctrlKey&&!e.metaKey&&!e.altKey){e.preventDefault();insertMention();return;}
@@ -208,8 +209,8 @@ function Conversation({subspace,channel,userId,invites}:{subspace:string;channel
   </form>
  </>;
 }
-export default function ClassWorkspace({subspace,userId,classLabel,initialChannel='general',invites=[]}:{subspace:string;userId:string;classLabel:string;initialChannel?:ChatChannelId;invites?:ChatInvite[]}) {
- const [channel,setChannel]=useState<ChatChannelId>(initialChannel);
+export default function ClassWorkspace({subspace,userId,classLabel,initialChannel='general',invites=[]}:{subspace:string;userId:string;classLabel:string;initialChannel?:StudyChannel;invites?:ChatInvite[]}) {
+ const [channel,setChannel]=useState<StudyChannel>(initialChannel==='meetups'?'general':initialChannel);
  const {sectionRef,height}=useFillViewport<HTMLElement>();
  const channelMenu=useRef<HTMLDetailsElement>(null);
  useEffect(()=>{
@@ -219,10 +220,10 @@ export default function ClassWorkspace({subspace,userId,classLabel,initialChanne
  return <section ref={sectionRef} style={height===null?undefined:{height}} className={ui.chatSurface} aria-label={classLabel+' chat'}>
   <header className={ui.chatToolbar}>
    <details ref={channelMenu} className={ui.channelPicker} id="active-conversation" onKeyDown={event=>{if(event.key==='Escape'){event.preventDefault();if(channelMenu.current){channelMenu.current.open=false;channelMenu.current.querySelector('summary')?.focus();}}}}>
-    <summary aria-label={'Choose conversation. Current: '+channel}><span aria-hidden="true">#</span>{channel[0].toUpperCase()+channel.slice(1)}<svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="m6 9 6 6 6-6"/></svg></summary>
-    <nav className={ui.channelMenu} aria-label="Conversations"><span className={ui.channelMenuLabel}>CLASS CHANNELS</span>{(['general','homework','meetups'] as const).map(name=><button key={name} type="button" aria-current={channel===name?'true':undefined} onClick={()=>{setChannel(name);if(channelMenu.current){channelMenu.current.open=false;channelMenu.current.querySelector('summary')?.focus();}}}><span aria-hidden="true">#</span><span><strong>{name[0].toUpperCase()+name.slice(1)}</strong><small>{name==='general'?'Talk with your class':name==='homework'?'Questions and problem solving':'Plan a study session'}</small></span>{channel===name&&<span className={ui.channelCheck} aria-hidden="true">✓</span>}</button>)}</nav>
+    <summary aria-label={'Choose conversation. Current: '+channel}><span aria-hidden="true">#</span>{channel==='ai'?'Circle AI':channel[0].toUpperCase()+channel.slice(1)}<svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="m6 9 6 6 6-6"/></svg></summary>
+    <nav className={ui.channelMenu} aria-label="Conversations"><span className={ui.channelMenuLabel}>CLASS CHANNELS</span>{(['general','homework','ai'] as const).map(name=><button key={name} type="button" aria-current={channel===name?'true':undefined} onClick={()=>{setChannel(name);if(channelMenu.current){channelMenu.current.open=false;channelMenu.current.querySelector('summary')?.focus();}}}><span aria-hidden="true">#</span><span><strong>{name==='ai'?'Circle AI':name[0].toUpperCase()+name.slice(1)}</strong><small>{name==='general'?'Talk with your class':name==='homework'?'Questions and problem solving':'Private · Only you and Circle AI'}</small></span>{channel===name&&<span className={ui.channelCheck} aria-hidden="true">✓</span>}</button>)}</nav>
    </details>
-   <span className={ui.chatContext}>Class chat <span aria-hidden="true">·</span> @Circle AI available</span>
+   <span className={ui.chatContext}>{channel==='ai'?'Private · Only you and Circle AI':'Class chat · @Circle AI available'}</span>
   </header>
   <Conversation key={channel} subspace={subspace} channel={channel} userId={userId} invites={invites}/>
  </section>;

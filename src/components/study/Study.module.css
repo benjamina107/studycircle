@@ -119,7 +119,7 @@
 .choosePill{background:#405f3d;color:white;padding:11px 22px;border-radius:9px;font-size:14px;margin-top:24px}
 .fileHint{color:#7b8874;font-size:12px;line-height:1.65;margin:0}
 .browseFooter{flex-shrink:0;text-align:center;padding:18px 0 30px}
-.browseFooter button{font-size:13px;color:#546e48;cursor:pointer;padding:10px}
+.browseFooter button{font-size:15px;color:#546e48;cursor:pointer;padding:10px}
 .browseFooter span{margin-left:8px}
 .libraryHeader{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:20px 0 14px;flex-shrink:0}
 .libraryHeader p{font-size:13px;color:#7b8874;margin:0}

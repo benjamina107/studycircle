@@ -26,7 +26,9 @@ export async function processAsset(item: Asset) {
 export async function answerQuestion(q: Question) {
  const db=adminClient();
  if(!checked(await db.rpc('kb_user_is_member',{who:q.author_id,target:q.subspace_id}))) throw new Error('Membership changed');
- const history=checked(await db.from('study_messages').select('id,role,body,payload,created_at').eq('subspace_id',q.subspace_id).eq('channel',q.channel).lt('created_at',q.created_at).order('created_at',{ascending:false}).limit(20)) || [];
+ let historyQuery=db.from('study_messages').select('id,role,body,payload,created_at').eq('subspace_id',q.subspace_id).eq('channel',q.channel).lt('created_at',q.created_at).order('created_at',{ascending:false}).limit(20);
+ historyQuery=q.channel==='ai'?historyQuery.eq('private_owner_id',q.author_id):historyQuery.is('private_owner_id',null);
+ const history=checked(await historyQuery)||[];
  const latestCards=history.find(m=>m.role==='assistant'&&m.payload?.cards?.length)?.payload?.cards as Card[]|undefined;
  const cardContext=(latestCards||[]).map((card,i)=>`${i+1}. ${card.question} ${card.answer}`).join('\n').slice(0,12000);
  const searchText=[...history.slice(0,2).reverse().map(m=>m.body.slice(0,800)),cardContext,q.body].join('\n');

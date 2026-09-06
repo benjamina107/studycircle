@@ -40,4 +40,4 @@ export function diversePassages(rows: SearchPassage[], limit = 18): SearchPassag
   return output;
 }
 export const hasMention = (text: string) => /(^|\s)@(?:circle[ \t]+ai|circleai|ai|classai)\b/i.test(text);
-export const isChannel = (value: unknown): value is 'general'|'homework'|'meetups' => ['general','homework','meetups'].includes(String(value));
+export const isChannel = (value: unknown): value is 'general'|'homework'|'meetups'|'ai' => ['general','homework','meetups','ai'].includes(String(value));

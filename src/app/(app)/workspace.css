@@ -149,8 +149,8 @@
 .student-cover>span:first-child { font-size:10px; letter-spacing:2px; }
 .student-cover>span:last-child { font-size:76px; color:#8da87e; }
 .student-identity { margin-top:-30px; padding:0 14px; }
-.student-avatar { width:84px; height:84px; border:5px solid #f8f9f5; border-radius:50%; object-fit:cover; display:grid; place-items:center; background:#405c48; color:#f4f5df; font:28px Georgia,serif; }
-.student-identity h1 { font:36px Georgia,serif; letter-spacing:-1px; margin:18px 0 10px; overflow-wrap:anywhere; }
+.student-avatar { width:84px; height:84px; border:5px solid #f8f9f5; border-radius:50%; object-fit:cover; display:grid; place-items:center; background:#405c48; color:#f4f5df; font-size:28px;font-weight:600; }
+.student-identity h1 { font-size:36px;font-weight:600; letter-spacing:-1px; margin:18px 0 10px; overflow-wrap:anywhere; }
 .student-identity p { font-size:13px; line-height:1.7; margin:8px 0; }
 .student-identity p span { color:#7d8874; }
 .student-interests { color:#6d7e61; white-space:pre-wrap; overflow-wrap:anywhere; }

@@ -20,8 +20,9 @@ export async function POST(request:Request) {
   const db=adminClient();const existing=checked(await db.from('study_messages').select('id,author_id,subspace_id,channel,body').eq('id',input.id).maybeSingle());
   if(existing){if(existing.author_id===user.id&&existing.subspace_id===subspace&&existing.channel===input.channel&&existing.body===input.body.trim())return json({id:existing.id});throw new InputError('That message ID is already in use.',409);}
   await quota(user.id,'messages',30);
-  if(hasMention(input.body))await quota(user.id,'ai',5);
-  const result=await db.from('study_messages').insert({id:input.id,subspace_id:subspace,channel:input.channel,author_id:user.id,role:'user',body:input.body.trim(),ai_status:hasMention(input.body)?'queued':'none'});
+  const askAI=input.channel==='ai'||hasMention(input.body);
+  if(askAI)await quota(user.id,'ai',5);
+  const result=await db.from('study_messages').insert({id:input.id,subspace_id:subspace,channel:input.channel,author_id:user.id,role:'user',body:input.body.trim(),private_owner_id:input.channel==='ai'?user.id:null,ai_status:askAI?'queued':'none'});
   if(result.error)throw new InputError('Your message could not be sent. Please retry.',503);
   return json({id:input.id},201);
  }catch(error){return apiError(error);}
