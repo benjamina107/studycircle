@@ -30,19 +30,24 @@ export default async function ClassMeetups({ spaceId, subspaceId }: { spaceId: s
         db.from("meetups").select(fields).eq("subspace_id", subspaceId).lte("starts_at", now).order("starts_at", { ascending: false }).order("id", { ascending: true }).limit(25),
         db.from("meetups").select(fields).eq("subspace_id", subspaceId).not("cancelled_at", "is", null).order("cancelled_at", { ascending: false }).limit(25),
       ]);
-      if (upcoming.error || past.error || cancelled.error) throw new Error("read failed");
+      const readError = upcoming.error ?? past.error ?? cancelled.error;
+      if (readError) throw new Error(`meetups read failed: ${readError.code ?? "?"} ${readError.message}`);
       meetups = [...new Map([...upcoming.data ?? [], ...past.data ?? [], ...cancelled.data ?? []].map(meetup => [meetup.id, meetup])).values()];
       if (meetups.length) {
         const attendance = await db.from("meetup_attendees").select("meetup_id,user_id")
           .in("meetup_id", meetups.map(meetup => meetup.id));
-        if (attendance.error) throw new Error("attendance failed");
+        if (attendance.error) throw new Error(`attendance read failed: ${attendance.error.code ?? "?"} ${attendance.error.message}`);
         for (const row of attendance.data ?? []) {
           const id = row.meetup_id as string;
           attendees.set(id, [...(attendees.get(id) ?? []), row.user_id as string]);
         }
       }
     }
-  } catch {
+  } catch (error) {
+    // Log the underlying Postgres error server-side only. A missing column or
+    // policy otherwise reaches the reader as an unactionable notice, while the
+    // message itself can carry schema detail that must not reach the browser.
+    console.error("Meetups load failed", { spaceId, subspaceId, error: error instanceof Error ? error.message : "Unknown error" });
     failure = "Meetups couldn’t be loaded. Please refresh and try again.";
   }
   if(failure)return <section className={styles.screen}><header className={styles.header}><h1>Meetups</h1></header><p role="alert" className={styles.notice}>{failure}</p></section>;
