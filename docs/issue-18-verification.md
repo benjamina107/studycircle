@@ -52,7 +52,9 @@ confirmation button, and expired sessions redirected without context.
 
 Successful account transitions are covered with controlled service responses;
 this run did not create another live student account or send another email.
-An optional real-account login/refresh/logout check was offered to the user.
+The user subsequently confirmed that live login and logout work without issues.
+Live session restoration after refresh was not separately confirmed by the user;
+session refresh behavior passed the independent controlled runtime checks.
 The earlier Resend delivery test is documented separately.
 
 ## Collaboration
