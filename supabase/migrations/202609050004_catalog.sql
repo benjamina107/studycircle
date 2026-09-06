@@ -1,0 +1,2 @@
+-- Already applied remotely as catalog. Remote history contains no SQL body.
+-- Preserve this version marker; do not infer or replay catalog data from it.

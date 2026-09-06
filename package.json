@@ -17,14 +17,22 @@
     "test:auth:smoke": "node scripts/check-auth.mjs",
     "test:feed": "tsx --test src/lib/feed*.test.ts",
     "catalog:validate": "tsx scripts/catalog-validate.ts",
-    "test:catalog": "tsx --test src/lib/catalog-validation.test.ts"
+    "test:catalog": "tsx --test src/lib/catalog-validation.test.ts",
+    "worker": "tsx scripts/knowledge-worker.ts",
+    "test:knowledge": "tsx --test src/lib/knowledge/*.test.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.5",
     "@supabase/supabase-js": "^2.112.4",
+    "file-type": "^22.0.2",
+    "mammoth": "^1.12.2",
     "next": "16.3.4",
+    "openai": "^7.10.0",
+    "pdf-lib": "^1.17.1",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "sharp": "^0.35.4",
+    "yauzl": "^3.4.0"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.4.3",
@@ -32,11 +40,12 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/yauzl": "^3.4.0",
     "dotenv": "^17.4.2",
     "eslint": "^9",
     "eslint-config-next": "16.3.4",
     "tailwindcss": "^4",
-    "typescript": "^5",
-    "tsx": "^4.23.13"
+    "tsx": "^4.23.13",
+    "typescript": "^5"
   }
 }

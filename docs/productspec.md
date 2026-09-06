@@ -1,6 +1,8 @@
 # Study Spaces — Product Spec (v0.1)
 
 **Source:** planning conversation, Sep 5 2026
+**Current AI scope:** Shared uploads directly to a professor subspace with optional free-text context; audio, images, PDF, DOCX and text, no video. `@AI` answers and Quizlet tab-separated question/answer exports run on request. No automatic summaries or missing-material checks. Syllabus is a separate future flow. See [current implementation](ai-knowledge-base.md). The lecture-folder AI descriptions below are historical and superseded.
+
 **Status:** Draft. Captures where the conversation landed, not where it started. Superseded ideas are listed at the bottom so we don't relitigate them.
 
 ---

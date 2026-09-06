@@ -24,7 +24,7 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" | "resend"
     } catch { setFailed(true); setStatus("We couldn’t complete your request. Check your connection and try again."); }
     finally { setPending(false); }
   }
-  return <form onSubmit={submit} className="auth-form" aria-busy={pending}>
+  return <form method="post" onSubmit={submit} className="auth-form" aria-busy={pending}>
     <div className="auth-form-heading"><h2>{signup ? "Create an account" : mode === "login" ? "Log in" : "Request a new link"}</h2><p>{signup ? "Use your Cal Poly email. You’ll need to verify it before signing in." : mode === "login" ? "Enter your Cal Poly email and password." : "Enter the email you used to sign up."}</p></div>
     {signup && <label className="auth-field" htmlFor="auth-name">Your name<input id="auth-name" name="name" autoComplete="name" placeholder="Full name" required maxLength={100} className="auth-input" /></label>}
     <label className="auth-field" htmlFor="auth-email">Cal Poly email<input id="auth-email" name="email" type="email" autoComplete="email" placeholder="you@calpoly.edu" required maxLength={254} className="auth-input" /></label>
