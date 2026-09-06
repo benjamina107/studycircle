@@ -33,3 +33,15 @@ test('network, non-JSON, empty and failed responses produce recoverable failures
     await assert.rejects(createAuthRequest(async () => response)('/api/auth/login', {}), /Please try again shortly/);
   }
 });
+test('leaving an auth form cancels its request without a late navigation or error', async () => {
+ let finish;
+ const run=createAuthRequest(async()=>new Promise(resolve=>{finish=resolve;}));
+ const pending=run('/api/auth/login',{});
+ run.cancel();
+ finish(Response.json({next:'/profile'}));
+ assert.equal(await pending,null);
+});
+test('login timeout does not tell students to look for an email',async()=>{
+ const run=createAuthRequest(async(_url,{signal})=>new Promise((_resolve,reject)=>signal.addEventListener('abort',()=>reject(new DOMException('aborted','AbortError')))),5);
+ await assert.rejects(run('/api/auth/login',{}),/Login took too long/);
+});
