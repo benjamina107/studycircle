@@ -43,17 +43,16 @@
 
 .chatSurface { display:flex; flex-direction:column; height:calc(100dvh - 198px); min-height:360px; color:light-dark(#293e33, var(--night-text)); }
 .chatToolbar { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 0 16px; border-bottom:1px solid light-dark(#dfe5d9, var(--night-border)); flex-shrink:0; }
-.channelPicker { display:flex; align-items:center; gap:6px; }
-.channelPicker>span { color:light-dark(#89967c, var(--night-muted)); font-size:24px; }
-.channelPicker select { font-family:inherit; line-height:1.3; font-size:20px; font-weight:600; color:light-dark(#304b3b, var(--night-text)); border:0; background:transparent; padding:6px 24px 6px 4px; cursor:pointer; max-width:210px; }
+.channelTitle { display:flex; align-items:center; gap:9px; font-size:18px; font-weight:600; }
+.channelTitle>span { color:light-dark(#8b9a7e, var(--night-muted)); font-weight:400; }
 .chatContext { color:light-dark(#78876f, var(--night-muted)); font-size:11px; }
 .chatContext>span { padding:0 5px; }
 .chatSurface .log { flex:1; min-height:0; max-height:none; height:auto; padding:22px 0; }
 .chatSurface>form { flex-shrink:0; padding:14px 0 12px; border-top:1px solid light-dark(#dfe5d9, var(--night-border)); }
 .chatSurface>form>label { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); }
 .chatSurface textarea { min-height:60px; max-height:130px; font-size:14px; }
-.chatSurface button:focus-visible,.channelPicker select:focus-visible,.chatSurface textarea:focus-visible { outline:2px solid light-dark(#508058, var(--night-accent)); outline-offset:3px; }
-@media(max-width:600px){.chatSurface{height:calc(100dvh - 256px);min-height:300px}.chatToolbar{padding-top:0}.chatContext{font-size:10px}.channelPicker select{font-size:18px}.chatSurface .log{padding:16px 0}}
+.chatSurface button:focus-visible,.chatSurface textarea:focus-visible { outline:2px solid light-dark(#508058, var(--night-accent)); outline-offset:3px; }
+@media(max-width:600px){.chatSurface{height:calc(100dvh - 256px);min-height:300px}.chatToolbar{padding-top:0}.chatContext{font-size:10px}.chatSurface .log{padding:16px 0}}
 
 .chatSurface .composerInput textarea { padding-right:56px; resize:none; border:1px solid light-dark(#cbd5c5, var(--night-border)); transition:border-color .15s,box-shadow .15s; }
 .sendIcon { position:absolute; right:12px; top:50%; transform:translateY(-50%); width:32px; height:32px; display:grid; place-items:center; padding:0; border:0; border-radius:50%; background:#35583f; color:white; cursor:pointer; }
@@ -63,22 +62,6 @@
 .composerInput textarea { display:block; }
 
 .chatSurface .composerInput textarea { min-height:46px; height:46px; max-height:130px; line-height:20px; box-sizing:border-box; overflow-y:hidden; }
-
-.channelPicker { position:relative; display:block; }
-.channelPicker summary { display:flex; align-items:center; gap:9px; padding:7px 10px; margin-left:-10px; border-radius:8px; cursor:pointer; list-style:none; font-size:18px; font-weight:600; }
-.channelPicker summary::-webkit-details-marker { display:none; }
-.channelPicker summary>span { color:light-dark(#8b9a7e, var(--night-muted)); font-weight:400; }
-.channelPicker summary svg { margin-left:8px; color:light-dark(#7b8b70, var(--night-muted)); }
-.channelPicker summary:hover,.channelPicker[open] summary { background:light-dark(#edf1e6, var(--night-raised)); }
-.channelPicker summary:focus-visible { outline:2px solid light-dark(#719365, var(--night-accent)); outline-offset:2px; }
-.channelMenu { max-height:min(430px,60dvh); overflow-y:auto; overscroll-behavior:contain; position:absolute; top:calc(100% + 8px); left:0; z-index:25; width:260px; max-width:calc(100vw - 40px); padding:7px; background:light-dark(#fffefa, var(--night-surface)); border:1px solid light-dark(#dce4d3, var(--night-border)); border-radius:12px; box-shadow:0 8px 28px #233e3418; }
-.channelMenuLabel { display:block; padding:10px 10px 8px; font-size:9px; letter-spacing:1.3px; color:light-dark(#839176, var(--night-muted)); }
-.channelMenu button { display:flex; width:100%; align-items:center; gap:10px; border:0; border-radius:7px; background:transparent; color:light-dark(#52644b, var(--night-text)); text-align:left; padding:10px; cursor:pointer; }
-.channelMenu button:hover { background:light-dark(#f0f3e9, var(--night-raised)); }
-.channelMenu button[aria-current] { background:light-dark(#e9efdf, var(--night-raised)); color:light-dark(#345330, var(--night-text)); }
-.channelMenu strong { display:block; font-size:13px; font-weight:600; }
-.channelMenu small { display:block; font-size:10px; margin-top:4px; color:light-dark(#7b8870, var(--night-muted)); }
-.channelCheck { margin-left:auto; font-size:12px; }
 
 .answerEditorial { margin-top:14px; }
 .practiceSet { max-width:570px; border-left:3px solid light-dark(#c6d6b5, var(--night-border)); padding:4px 0 0 23px; margin-top:22px; }
