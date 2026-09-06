@@ -69,16 +69,40 @@ export function applicationOrigin(requestUrl?: string): string {
   if (!configured && process.env.NODE_ENV === "production") {
     throw new InputError("Account access is currently unavailable. Please try again later.", 503);
   }
-  const url = new URL(configured || requestUrl || "http://localhost:3000");
+  let url: URL;
+  try { url = new URL(configured || requestUrl || "http://localhost:3000"); }
+  catch { throw new InputError("Account access is currently unavailable. Please try again later.", 503); }
   if (!["http:", "https:"].includes(url.protocol) || url.username || url.password ||
       (process.env.NODE_ENV === "production" && url.protocol !== "https:")) {
     throw new InputError("Account access is currently unavailable. Please try again later.", 503);
   }
+  // Local dev is reachable through either loopback name; keep links and cookies
+  // on the host the student actually used. Never relax production origin checks.
+  if (process.env.NODE_ENV !== "production" && requestUrl) {
+    const requested = new URL(requestUrl);
+    const loopback = (host:string) => ["localhost","127.0.0.1","[::1]"].includes(host);
+    if (loopback(url.hostname) && loopback(requested.hostname) && requested.protocol===url.protocol && requested.port===url.port && !requested.username && !requested.password) return requested.origin;
+  }
   return url.origin;
 }
 
+export function requestApplicationOrigin(request:Request):string {
+  const url=new URL(request.url);
+  const host=request.headers.get("host");
+  // Next dev normalizes request.url to localhost even when Host is 127.0.0.1.
+  // Only honor the actual Host for a matching local dev listener.
+  if(process.env.NODE_ENV!=="production" && host) {
+    try {
+      const actual=new URL(`${url.protocol}//${host}`);
+      const loopback=(name:string)=>["localhost","127.0.0.1","[::1]"].includes(name);
+      if(loopback(url.hostname)&&loopback(actual.hostname)&&url.port===actual.port&&!actual.username&&!actual.password) return applicationOrigin(actual.href);
+    } catch { /* Fall through to canonical configuration. */ }
+  }
+  return applicationOrigin(request.url);
+}
+
 export function assertSameOrigin(request: Request): void {
-  if (request.headers.get("origin") !== applicationOrigin(request.url) ||
+  if (request.headers.get("origin") !== requestApplicationOrigin(request) ||
       request.headers.get("sec-fetch-site") === "cross-site") {
     throw new InputError("We couldn’t accept this request. Open StudyCircle in your browser and try again.", 403);
   }

@@ -1,3 +1,6 @@
+import AuthLinkNotice from "@/components/AuthLinkNotice";
+import {getCurrentUser} from "@/lib/auth";
+import {redirect} from "next/navigation";
 import AuthForm from "@/components/AuthForm";
 import AuthVerify from "@/components/AuthVerify";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
@@ -7,16 +10,18 @@ export const dynamic = "force-dynamic";
 
 export default async function VerifyPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   if (!isSupabaseConfigured()) return <p role="status">Email confirmation is currently unavailable. Please try again later.</p>;
+  if (await getCurrentUser()) redirect("/profile");
   const query = await searchParams;
   const tokenHash = typeof query.token_hash === "string" ? query.token_hash : "";
   const type = typeof query.type === "string" ? query.type : "email";
   const usableToken = /^[a-zA-Z0-9_-]{20,256}$/.test(tokenHash) && ["signup", "email"].includes(type);
+  const errorMessage = query.error || tokenHash || query.type
+    ? type === "recovery"
+      ? "This is a password recovery link. Password reset is not available here yet. Return to login or contact the StudyCircle team for help."
+      : "We couldn’t confirm your email with this link. If you already confirmed it, try logging in. Otherwise, request another email below."
+    : "";
   return <>
-    {usableToken ? <AuthVerify tokenHash={tokenHash} type={type} /> : <div className="auth-confirm">
-      <h2>Check your inbox.</h2>
-      <p>Open the confirmation link in your Cal Poly email. If you don’t see it, take a quick look in spam.</p>
-      {(query.error || tokenHash || query.type) && <p role="alert" className="auth-status">{type === "recovery" ? "This is a password recovery link. Password reset is not available here yet. Return to login or contact the StudyCircle team for help." : "We couldn’t confirm your email. Try opening the link again in the browser where you signed up. If that doesn’t work, request another email below or try logging in."}</p>}
-    </div>}
-    <AuthForm mode="resend" />
+    {usableToken ? <AuthVerify tokenHash={tokenHash} type={type} /> : <AuthLinkNotice errorMessage={errorMessage} />}
+    {!usableToken && <AuthForm mode="resend" />}
   </>;
 }

@@ -1,12 +1,11 @@
 "use client";
-import { useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { createAuthRequest } from "@/lib/auth-request";
 
 export default function AuthVerify({ tokenHash, type }: { tokenHash: string; type: string }) {
-  const router = useRouter();
   const request = useRef(createAuthRequest());
+  useEffect(()=>{const run=request.current;return()=>run.cancel();},[]);
   const [status, setStatus] = useState("");
   const [pending, setPending] = useState(false);
   async function verify() {
@@ -16,7 +15,7 @@ export default function AuthVerify({ tokenHash, type }: { tokenHash: string; typ
     try {
       const result = await request.current("/api/auth/verify", { token_hash: tokenHash, type });
       if (!result) return;
-      router.replace("/profile"); router.refresh();
+      window.location.replace("/profile");
     } catch (error) { setStatus(error instanceof Error ? error.message : "Please try again shortly."); setPending(false); }
   }
   return <div className="auth-confirm">

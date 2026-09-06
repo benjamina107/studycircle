@@ -56,3 +56,24 @@ test("JSON parsing bounds actual bytes and rejects non-objects and malformed inp
   for (const body of ["null", "[]", "invalid", '"string"', JSON.stringify({ value: "x".repeat(8192) })]) await assert.rejects(readJson(req(body)));
   await assert.rejects(readJson(req("{}", "text/plain")));
 });
+
+test('development loopback aliases stay same-origin without trusting other hosts', async () => {
+ const previous=process.env.APP_URL;process.env.APP_URL='http://127.0.0.1:3000';
+ try {
+  const {applicationOrigin,assertSameOrigin}=await import('./validation');
+  assert.equal(applicationOrigin('http://localhost:3000/login'),'http://localhost:3000');
+  assert.doesNotThrow(()=>assertSameOrigin(new Request('http://localhost:3000/api/auth/login',{headers:{Origin:'http://localhost:3000'}})));
+  assert.throws(()=>assertSameOrigin(new Request('http://localhost:3000/api/auth/login',{headers:{Origin:'http://127.0.0.1:3000'}})));
+  assert.throws(()=>assertSameOrigin(new Request('http://attacker.example:3000/api/auth/login',{headers:{Origin:'http://attacker.example:3000'}})));
+  assert.equal(applicationOrigin('http://localhost:4000/login'),'http://127.0.0.1:3000');
+ } finally {if(previous===undefined)delete process.env.APP_URL;else process.env.APP_URL=previous;}
+});
+
+test('Next dev normalized URLs use the loopback Host, not a different browser origin',async()=>{
+ const previous=process.env.APP_URL;process.env.APP_URL='http://127.0.0.1:3000';
+ try{const {assertSameOrigin,requestApplicationOrigin}=await import('./validation');
+ const request=new Request('http://localhost:3000/api/auth/login',{headers:{Host:'127.0.0.1:3000',Origin:'http://127.0.0.1:3000'}});
+ assert.doesNotThrow(()=>assertSameOrigin(request));assert.equal(requestApplicationOrigin(request),'http://127.0.0.1:3000');
+ assert.throws(()=>assertSameOrigin(new Request(request,{headers:{Host:'127.0.0.1:3000',Origin:'http://localhost:3000'}})));
+ }finally{if(previous===undefined)delete process.env.APP_URL;else process.env.APP_URL=previous;}
+});

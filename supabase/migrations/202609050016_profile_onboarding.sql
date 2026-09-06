@@ -2,7 +2,7 @@
 begin;
 
 alter table public.profiles
-  add column onboarding_completed_at timestamptz;
+  add column if not exists onboarding_completed_at timestamptz;
 
 -- Existing profiles with a saved display name already satisfy the original
 -- profile contract. New auth-triggered rows keep NULL, even when signup
