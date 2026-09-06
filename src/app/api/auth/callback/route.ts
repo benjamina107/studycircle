@@ -16,8 +16,9 @@ export async function GET(request: Request) {
         try {
           calPolyEmail(data.user.email);
           return NextResponse.redirect(new URL("/profile", origin), { headers: { "Cache-Control": "no-store", "Referrer-Policy": "no-referrer" } });
-        } catch { await supabase.auth.signOut({ scope: "local" }); }
+        } catch { /* Reject accounts outside the campus domain. */ }
       }
+      if (data.session) await supabase.auth.signOut({ scope: "local" });
     } catch { /* Show a recoverable state without exposing provider details. */ }
   }
   return NextResponse.redirect(new URL("/verify?error=confirmation", origin), { headers: { "Cache-Control": "no-store", "Referrer-Policy": "no-referrer" } });
