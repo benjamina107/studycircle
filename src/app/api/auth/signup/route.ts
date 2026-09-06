@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { apiError, json, rateLimit } from "../_utils";
+import { apiError, authFailure, json, rateLimit } from "../_utils";
 import { applicationOrigin, assertSameOrigin, calPolyEmail, passwordInput, readJson, textInput } from "../validation";
 
 export async function POST(request: Request) {
@@ -16,7 +16,7 @@ export async function POST(request: Request) {
       options: { data: { name }, emailRedirectTo: `${applicationOrigin(request.url)}/api/auth/callback` },
     });
     // Match the accepted response for existing accounts to avoid revealing membership.
-    if (error && !["user_already_exists", "email_exists"].includes(error.code || "")) return json({ error: error.status === 429 ? "Too many attempts. Please wait a minute and try again." : "We couldn’t complete your signup. Please try again shortly." }, error.status === 429 ? 429 : 400);
+    if (error && !["user_already_exists", "email_exists"].includes(error.code || "")) return authFailure(error, "signup");
     // Fail closed when a project accidentally disables email confirmation.
     if (!error && data.session) {
       await supabase.auth.signOut({ scope: "local" });

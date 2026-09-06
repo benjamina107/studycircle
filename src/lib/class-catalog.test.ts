@@ -34,3 +34,16 @@ test("meeting label joins what is known and falls back when nothing is listed", 
   // A half-known time is dropped rather than rendered as a dangling range.
   assert.equal(meetingLabel(section("c", "CSC 1001", "Anita Rathi", "S01", { days: "MWF", start_time: "12:00 PM" })), "MWF");
 });
+
+test('multiple sections collapse by actual course and professor IDs', () => {
+  const entries = [
+    section('s1', 'CSC 1001', 'Same Name', 'S01', {course_id:'c1',professor_id:'p1'}),
+    section('s2', 'CSC 1001', 'Same Name', 'S02', {course_id:'c1',professor_id:'p1'}),
+    section('s3', 'CSC 1001', 'Same Name', 'S03', {course_id:'c1',professor_id:'p2'}),
+    section('s4', 'CSC 1001', 'Same Name', 'S04', {course_id:'c2',professor_id:'p1'}),
+  ];
+  const groups=groupByCourse(entries);
+  assert.equal(groups.length,2);
+  assert.deepEqual(groups[0].sections.map(s=>s.id),['s1','s3']);
+  assert.deepEqual(groups[1].sections.map(s=>s.id),['s4']);
+});

@@ -2,17 +2,17 @@
 // Only resizes and pads the original artwork. Never crops or redraws it.
 import { writeFile } from "node:fs/promises";
 import sharp from "sharp";
+import { fileURLToPath } from "node:url";
 
-const original = new URL("./studycircle-original.png", import.meta.url);
+const original = new URL("./favicon-source.png", import.meta.url);
 const app = new URL("../../src/app/", import.meta.url);
 
 async function paddedIcon(size) {
-  const inset = Math.round(size * 0.14);
+  const inset = Math.round(size * 0.08);
   const inner = size - inset * 2;
-  return sharp(original.pathname)
-    .resize(inner, inner, { fit: "contain", background: "#ffffff" })
-    .extend({ top: inset, bottom: inset, left: inset, right: inset, background: "#ffffff" })
-    .flatten({ background: "#ffffff" })
+  return sharp(fileURLToPath(original))
+    .resize(inner, inner, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
+    .extend({ top: inset, bottom: inset, left: inset, right: inset, background: { r: 0, g: 0, b: 0, alpha: 0 } })
     .ensureAlpha()
     .png()
     .toBuffer();

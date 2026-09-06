@@ -1,3 +1,4 @@
+import mammoth from 'mammoth';
 import { getCurrentUser } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
 import { adminClient,checked } from '@/lib/knowledge/admin';
@@ -15,6 +16,24 @@ async function upload(context:Context) {
 }
 export async function GET(request:Request,context:Context) {
  try {const {file}=await upload(context);
+  if(new URL(request.url).searchParams.get('preview')==='1') {
+   const admin=adminClient();
+   const asset=checked(await admin.from('kb_assets').select('mime_type').eq('id',file.asset_id).single());
+   if(!asset)throw new InputError('File unavailable.',404);
+   const mime=asset.mime_type;
+   if(mime==='text/plain'||mime.includes('wordprocessingml')) {
+    const blob=checked(await admin.storage.from('class-notes').download(file.object_path));
+    if(!blob)throw new InputError('File unavailable.',404);
+    const bytes=Buffer.from(await blob.arrayBuffer());
+    const text=mime==='text/plain'?bytes.toString('utf8'):(await mammoth.extractRawText({buffer:bytes})).value;
+    return Response.json({kind:'text',text,document:mime!=='text/plain'},{headers:{'Cache-Control':'private, no-store'}});
+   }
+   const kind=mime==='application/pdf'?'pdf':mime.startsWith('image/')?'image':mime.startsWith('audio/')||mime==='application/ogg'?'audio':'unsupported';
+   if(kind==='unsupported')return Response.json({kind},{headers:{'Cache-Control':'private, no-store'}});
+   const link=checked(await admin.storage.from('class-notes').createSignedUrl(file.object_path,3600));
+   if(!link)throw new InputError('Preview unavailable.',404);
+   return Response.json({kind,url:link.signedUrl},{headers:{'Cache-Control':'private, no-store'}});
+  }
   const data=checked(await adminClient().storage.from('class-notes').createSignedUrl(file.object_path,60,{download:file.file_name}));
   if(!data)throw new Error("File link unavailable");
   return new Response(null,{status:302,headers:{Location:data.signedUrl,'Cache-Control':'private, no-store','Referrer-Policy':'no-referrer'}});

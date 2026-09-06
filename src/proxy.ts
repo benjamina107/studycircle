@@ -21,7 +21,8 @@ export async function proxy(request: NextRequest) {
       },
     },
   });
-  await supabase.auth.getClaims();
+  try { await supabase.auth.getClaims(); }
+  catch { /* Auth handlers and protected pages still validate users; keep recovery pages available during outages. */ }
   response.headers.set("Cache-Control", "private, no-store");
   if (path === "/verify" || path.startsWith("/api/auth/")) response.headers.set("Referrer-Policy", "no-referrer");
   return response;

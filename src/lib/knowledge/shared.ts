@@ -1,3 +1,4 @@
+import {CLASS_CHANNELS,type StudyChannel} from './channels';
 export const MAX_FILE_BYTES = 25_000_000;
 export const ACCEPT_FILES = '.pdf,.docx,.txt,.md,.jpg,.jpeg,.png,.webp,.mp3,.m4a,.wav,.ogg,.flac';
 export type Card = { question: string; answer: string };
@@ -40,4 +41,4 @@ export function diversePassages(rows: SearchPassage[], limit = 18): SearchPassag
   return output;
 }
 export const hasMention = (text: string) => /(^|\s)@(?:circle[ \t]+ai|circleai|ai|classai)\b/i.test(text);
-export const isChannel = (value: unknown): value is 'general'|'homework'|'meetups' => ['general','homework','meetups'].includes(String(value));
+export const isChannel = (value: unknown): value is StudyChannel => value==='ai'||value==='meetups'||CLASS_CHANNELS.some(c=>c.id===value);

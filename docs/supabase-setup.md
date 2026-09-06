@@ -1,61 +1,67 @@
-# Supabase setup for the team — authentication only
+# Supabase setup for the team
 
-You need **one shared development Supabase project**, not one project per teammate. Invite teammates to the organization using their own accounts. Keep production separate when ready.
+Use one shared development project, invite teammates using their own accounts, and keep production separate. The shared development project is `zmtwlnmikhxfsbdtbtax`; check its current migration status before changes. Setup covers Auth, domain data, private uploads, and ClassAI.
 
-The shared studyCircle development project (`zmtwlnmikhxfsbdtbtax`) has the profile and full domain migrations applied. Frontend authentication work remains in [issue #2](https://github.com/benjamina107/studycircle/issues/2). See [database inventory](database-migration.md).
+## Project configuration
 
-## One teammate: project configuration
+1. Keep the database password in the team password manager. Copy the Project URL and publishable key from Connect into `.env.local` as `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. Set `APP_URL=http://localhost:3000` locally.
+2. Reconcile migrations below. Supabase Auth and Storage schemas must exist; knowledge migrations require pgvector. Confirm catalog sections and enrollments resolve the intended course/professor/term subspaces.
+3. Enable email/password signup and **Confirm email**, set the password minimum to 12 characters, and disable anonymous sign-ins. The initial migration rejects non-`@calpoly.edu` accounts even when signup bypasses the app. Review compatibility before using a project with existing users/tables.
+4. Set development Site URL to `http://localhost:3000`. Allow `http://localhost:3000/api/auth/callback` and `http://localhost:3000/verify`; configure exact HTTPS equivalents before deployment. Canonical `APP_URL` must match the browser origin for mutation checks.
+5. Set the confirmation email template to `{{ .SiteURL }}/verify?token_hash={{ .TokenHash }}&type=email`. The verification UI requires an explicit confirmation action. The template uses Site URL; use a separate staging project for another origin.
+6. Configure custom SMTP. The email handoff records Resend sending from `noreply@studycircles.me` and a successful real campus verification test that landed in Junk; this historical result is not a fresh hosted check. Fresh projects need their own SMTP credentials. See [email setup and repeatable checks](resend-email-setup.md).
 
-1. Create the project and keep its database password in your team's password manager.
-2. Copy the Project URL and publishable key from the Connect dialog into each developer's `.env.local`:
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
-   - `APP_URL=http://localhost:3000`
-3. For a fresh project, apply both SQL files in `supabase/migrations/` in version order. They create profiles and the remaining 16 domain tables with access policies. Both versions are already recorded in the shared development project; do not reapply them. Storage bucket and upload implementation remain separate feature work.
-4. Enable email/password signup and **Confirm email** in Authentication. Set the password minimum to 12 characters to match the app. Keep anonymous sign-ins disabled.
-5. Set Site URL to `http://localhost:3000` for development. Allow `http://localhost:3000/api/auth/callback` and `http://localhost:3000/verify` under Redirect URLs. Add the exact HTTPS equivalents before deployment.
-6. Set the confirmation email link to `{{ .SiteURL }}/verify?token_hash={{ .TokenHash }}&type=email`. The planned verification page must require a click before consuming the token; wire this template when that UI and SMTP are available. This template uses Site URL; use a separate staging project to test a different deployment origin.
-7. The shared project uses **Resend custom SMTP**, sending from `noreply@studycircles.me`. Supabase Auth creates and validates verification tokens. A real Cal Poly signup email was delivered and the user confirmed their test worked, although it landed in Junk. See [Resend setup, repeatable checks, and deliverability follow-up](resend-email-setup.md). Fresh projects still need their own SMTP credentials; the built-in sender is limited to team-authorized recipients and two emails per hour.
+## Reconcile and apply migrations
 
-The database rejects non-`@calpoly.edu` accounts even if signup bypasses our app. Apply this initial migration to a fresh project; if reusing a project with existing users/tables, review compatibility first.
+There are **15 versioned SQL files**, not two. The original 17-table inventory is a baseline; later migrations add tables, functions, policies, and buckets.
 
-## Apply the migration
+| Version | Purpose |
+| --- | --- |
+| 202609050001 | Initial profiles and campus-auth restrictions |
+| 202609050002 | Domain schema and access policies |
+| 202609050003 | Meetups |
+| 202609050004 | Catalog historical marker; no executable SQL |
+| 202609050005 | Knowledge base, jobs, private `class-notes` bucket |
+| 202609050006 | Knowledge retrieval |
+| 202609050007 | Knowledge consistency |
+| 202609050008 | Sample catalog seed |
+| 202609050009 | Legacy lecture folders, private `lecture-notes` bucket |
+| 202609050010 | Separate class files, private `class-files` bucket |
+| 202609050011 | Separate chat file integration |
+| 202609050012 | Meetup integrity repair |
+| 202609050013 | Private AI chat |
+| 202609050014 | Classmates/direct messages |
+| 202609050015 | Additional predefined class chat channels |
 
-With Supabase CLI installed, run from this repository:
+`202609050004_catalog.sql` contains only comments recording an empty historical remote entry. Preserve it; do not invent catalog SQL, treat it as an import, or rewrite applied history. Review version 008's sample data for the target project. Older feature docs calling class files/chat files versions 004/005 predate renumbering: the actual files are 010/011. Use the on-disk sequence above.
+
+With the Supabase CLI, inspect the intended target before applying anything:
 
 ```sh
 supabase login
 supabase link --project-ref YOUR_PROJECT_REF
+supabase migration list
 supabase db push --dry-run
+# After reviewing target, history, and pending SQL:
 supabase db push
 ```
 
-Follow the CLI's password prompt if needed. Keep migration history in Git. Do not reset the shared database. Alternatively, for a fresh project you can run the SQL file once in SQL Editor, but reconcile its migration history before later using the CLI.
+For a fresh project, apply the sequence in version order, including the empty marker in history. For an existing project, apply only missing reviewed migrations. Do not reset the shared database or replay applied initial/domain SQL. Follow the password prompt and keep migration history in Git. If SQL Editor was used, reconcile actual schema and migration history before a later CLI push; do not mark versions applied merely to silence mismatches. This reconciliation neither applied nor verified hosted migrations.
 
 ## Each developer: run locally
 
-Create `.env.local` using `.env.example`, add the project settings, then:
+Copy `.env.example` to `.env.local`, configure the project, then run `npm install` and `npm run dev`. Auth/profile uses publishable-key cookie-scoped clients and RLS. Active Files/AI endpoints also need server-only `SUPABASE_SECRET_KEY` or `SUPABASE_SERVICE_ROLE_KEY`; the worker needs that credential and `OPENAI_API_KEY`.
 
-```sh
-npm install
-npm run dev
-```
+Run `npm run worker` separately for extraction, AI replies, retries, and queued original-file cleanup. `OPENAI_RESPONSE_MODEL` optionally overrides the default. Install ffprobe on web and worker hosts (`FFPROBE_PATH` overrides its path); optional live verification tooling also uses FFmpeg. Production must supervise a persistent Node worker and allow the upload route's 30,000,000-byte request ceiling and processing duration (`maxDuration=120` does not prove the host permits it). See [AI operations and limits](ai-knowledge-base.md).
 
-Once the signup UI and email delivery are implemented, sign up with a real Cal Poly email address, follow the confirmation email, and verify that the app opens your profile. Test logout, wrong password, expired/reused confirmation links, and refresh. No bypass account or fake successful verification is included.
+Never place service-role/secret, OpenAI, database-password, or SMTP credentials in `NEXT_PUBLIC_` variables, Git, browser code, or GitHub issues. The publishable key is intended for client use and relies on RLS. Keep private buckets private; do not loosen policies to make a smoke test pass.
 
-**No service-role key or Storage setup is required for the current auth work.** The publishable key is intended for client use and relies on RLS. Never place a service-role/secret key in a `NEXT_PUBLIC_` variable or a GitHub issue.
+## Hosted acceptance checks
 
-## Before calling auth complete
+- [ ] Compare all 15 versions with target migration history and inspect actual tables, functions, grants, policies, and buckets. History alone does not prove runtime behavior.
+- [ ] Verify real campus signup email delivery, one-time confirmation, and expired/reused-link failures. Test login, logout, refresh, unverified-user denial, and profile isolation on staging.
+- [ ] Confirm HTTPS URLs, Auth redirects, sender, password policy, and production rate limiting. Account recovery/reset remains separate work.
+- [ ] Check private `class-notes` upload/list/preview/download, membership isolation, processing, retry, deletion, and signed-link expiry using the [issue #6 checklist](issue-6-reconciliation.md#hosted-acceptance-checks-still-required).
+- [ ] Verify deployed web/worker credentials, binaries, request limits, logs, and recovery after worker restart.
 
-- [ ] Real confirmation email arrives and the link verifies once.
-- [ ] Unverified users cannot access protected pages or profiles.
-- [ ] Password login, session refresh, and logout work on staging.
-- [ ] One user cannot read/update another user's profile or email.
-- [ ] HTTPS app URL, redirects, sender, password policy and production rate limiting are configured.
-- [ ] Account recovery/reset is planned separately; not yet implemented.
-
-Local SQL tests exercise the auth migration against an in-memory Postgres with a minimal Supabase Auth fixture. They do not prove hosted email delivery or browser session behavior.
-
-No local SQLite database was found in this checkout. The old ORM dependencies, schema, generated code and tooling have been removed.
-
-References: [Supabase SSR](https://supabase.com/docs/guides/auth/server-side/creating-a-client), [migrations](https://supabase.com/docs/guides/local-development/database-migrations), [SMTP](https://supabase.com/docs/guides/auth/auth-smtp), [redirect URLs](https://supabase.com/docs/guides/auth/redirect-urls).
+`npm run check:supabase` checks Auth settings and anonymous denial for the original 17-table contract only. Local SQL tests use PGlite and mocked Supabase facilities; they do not prove hosted Storage HTTP behavior, email delivery, browser sessions, or model processing. The opt-in live knowledge script in the AI guide creates temporary hosted fixtures and makes paid model calls; it was not run for this reconciliation.

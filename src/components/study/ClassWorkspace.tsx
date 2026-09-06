@@ -3,7 +3,7 @@ import { useCallback,useEffect,useRef,useState,type FormEvent,type ReactNode } f
 import FeedRsvp from '@/components/FeedRsvp';
 import type { ChatInvite } from '@/components/chat/ChatDemo';
 import { ACCEPT_FILES,MAX_FILE_BYTES,quizletText,type AnswerPayload } from '@/lib/knowledge/shared';
-import type { ChatChannelId } from '@/lib/chat-demo';
+import {CLASS_CHANNELS,channelLabel,type StudyChannel} from '@/lib/knowledge/channels';
 import styles from '@/components/chat/ChatDemo.module.css';
 import ui from './Study.module.css';
 import { useFillViewport } from '@/lib/use-fill-viewport';
@@ -62,6 +62,29 @@ function Cards({payload}:{payload:AnswerPayload}) {
   </dialog>
  </div>;
 }
+function FilePreview({file,onClose}:{file:Upload|null;onClose:()=>void}) {
+ const dialog=useRef<HTMLDialogElement>(null);
+ const [preview,setPreview]=useState<{kind:string;url?:string;text?:string;document?:boolean}|null>(null);
+ const [failure,setFailure]=useState('');
+ useEffect(()=>{
+  if(!file){dialog.current?.close();return;}
+  dialog.current?.showModal();const controller=new AbortController();
+  api<{kind:string;url?:string;text?:string;document?:boolean}>(`/api/study/uploads/${file.id}?preview=1`,{signal:controller.signal}).then(data=>{if(!controller.signal.aborted)setPreview(data);}).catch(error=>{if(!controller.signal.aborted)setFailure(error instanceof Error?error.message:'Could not open this preview.');});
+  return()=>controller.abort();
+ },[file]);
+ return <dialog ref={dialog} className={ui.filePreview} onClose={onClose} aria-label={file?.file_name||'File preview'}>
+  <header><h2>{file?.file_name}</h2><a href={file?`/api/study/uploads/${file.id}`:undefined}>Download</a><button className={ui.libraryClose} onClick={onClose} aria-label="Close file preview"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></header>
+  <div className={ui.previewBody}>
+   {failure?<p role="alert">{failure}</p>:!preview?<p role="status">Opening preview…</p>:preview.kind==='pdf'?<iframe title={file?.file_name} src={preview.url}/>:preview.kind==='image'?/* eslint-disable-next-line @next/next/no-img-element */
+   <img src={preview.url} alt={file?.file_name}/>:preview.kind==='audio'?<audio controls src={preview.url} aria-label={file?.file_name}/>:preview.kind==='text'?<div className={ui.textPreview}>{preview.document&&<p className={ui.fileHint}>Text preview · Download for the original formatting.</p>}<pre>{preview.text}</pre></div>:<p>A preview isn’t available for this format. You can download the original above.</p>}
+  </div>
+ </dialog>;
+}
+function RemoveFileDialog({id,pending,onCancel,onRemove,error}:{id:string|null;pending:boolean;onCancel:()=>void;onRemove:()=>void;error?:string}) {
+ const ref=useRef<HTMLDialogElement>(null);
+ useEffect(()=>{if(id)ref.current?.showModal();else ref.current?.close();},[id]);
+ return <dialog ref={ref} className={ui.setDialog} onClose={onCancel} aria-label="Remove file"><header><h2>Remove this file?</h2></header><p>Your upload will be removed from this class.</p>{error&&<p role="alert">{error}</p>}<div className={ui.setActions}><button className={ui.previewSet} disabled={pending} onClick={onCancel}>Cancel</button><button className={ui.copySet} disabled={pending} onClick={onRemove}>{pending?'Removing…':'Remove file'}</button></div></dialog>;
+}
 export function Notes({subspace,userId}:{subspace:string;userId:string}) {
  const {data,error,refresh}=usePoll<{files:Upload[]}>(`/api/study/uploads?class=${encodeURIComponent(subspace)}`);
  const [files,setFiles]=useState<File[]>([]);const [description,setDescription]=useState('');const [pending,setPending]=useState(false);const [message,setMessage]=useState('');const [failed,setFailed]=useState(false);const [confirm,setConfirm]=useState<string|null>(null);
@@ -69,35 +92,63 @@ export function Notes({subspace,userId}:{subspace:string;userId:string}) {
  async function submit(event:FormEvent){event.preventDefault();setPending(true);setMessage('');setFailed(false);
   try {if(!files.length||files.length>5)throw new Error('Choose 1–5 files.');if(files.some(f=>f.size>MAX_FILE_BYTES))throw new Error('Each file must be 25 MB or smaller.');if(files.reduce((n,f)=>n+f.size,0)>29_000_000)throw new Error('Please upload less than 29 MB at a time.');
    const form=new FormData();form.set('description',description);files.forEach(f=>form.append('files',f));
-   const result=await api<{message:string}>(`/api/study/uploads?class=${encodeURIComponent(subspace)}`,{method:'POST',body:form});
-   setMessage(result.message);setFiles([]);setDescription('');if(input.current)input.current.value='';refresh();
+   await api<{message:string}>(`/api/study/uploads?class=${encodeURIComponent(subspace)}`,{method:'POST',body:form});
+   setMessage('Files shared. Circle AI is getting them ready.');uploadDialog.current?.close();setView('library');setPage(0);setFiles([]);setDescription('');if(input.current)input.current.value='';refresh();
   }catch(error){setFailed(true);setMessage(error instanceof Error?error.message:'Upload failed.');}finally{setPending(false);}
  }
  async function change(id:string,method:'DELETE'|'POST') {setPending(true);setFailed(false);try {const result=await api<{message:string}>(`/api/study/uploads/${id}`,{method});setMessage(result.message);setConfirm(null);refresh();}catch(error){setFailed(true);setMessage(error instanceof Error?error.message:'Please retry.');}finally{setPending(false);}}
- return <div className={ui.notes}>
-  <form onSubmit={submit} className={ui.upload}>
-   <h3>Share what you have</h3><p>Notes, homework, recordings, or a mix. Shared with this class and used by Circle AI.</p>
-   <label htmlFor="notes-files">Choose files</label><input ref={input} id="notes-files" type="file" multiple accept={ACCEPT_FILES} disabled={pending} onChange={e=>setFiles(Array.from(e.target.files||[]))}/>
-   <label htmlFor="notes-context">What are you sharing? <span>(optional)</span></label><textarea id="notes-context" value={description} onChange={e=>setDescription(e.target.value)} maxLength={1000} placeholder="HW 3, Lecture 1, lectures and homework…" disabled={pending}/>
-   <p className={styles.small}>PDF, DOCX, text, JPG, PNG, WebP, or audio · 5 files at a time · 25 MB per file · no video. PDF: up to 60 pages. Audio: up to 1 hour. DOCX images should be uploaded separately.</p>
-   {files.length>0&&<ul>{files.map((f,i)=><li key={i}>{f.name} · {(f.size/1e6).toFixed(1)} MB</li>)}</ul>}
-   <button className={styles.submit} disabled={pending||!files.length}>{pending?'Working…':'Upload notes'}</button>
-  </form>
-  {message&&<p role={failed?'alert':'status'} className={failed?styles.error:styles.status}>{message}</p>}
-  {error&&<p role="alert" className={styles.error}>{error}</p>}
-  <h3 className={ui.sectionTitle}>Class contributions</h3>
-  {!data&&!error&&<p>Loading notes…</p>}
-  {data?.files.length===0&&<p className={styles.empty}>No notes yet. Your first upload starts the class knowledge base.</p>}
-  {data?.files.map(file=><article key={file.id} className={ui.file}>
-   <div><a href={`/api/study/uploads/${file.id}`} target="_blank" rel="noopener noreferrer"><strong>{file.file_name}</strong></a><span className={ui.badge} data-state={file.kb_assets.status}>{file.kb_assets.status==='queued'?'Queued':file.kb_assets.status==='processing'?'Processing':file.kb_assets.status==='ready'?'Ready':'Needs attention'}</span></div>
-   {file.description&&<p>{file.description}</p>}<p className={styles.small}>{file.uploader_id===userId?'You':'Classmate'} · {(file.byte_size/1e6).toFixed(1)} MB · {new Date(file.created_at).toLocaleDateString()}</p>
-   {file.kb_assets.error&&<p className={styles.error}>{file.kb_assets.error}</p>}
-   {file.uploader_id===userId&&<div className={ui.actions}>{file.kb_assets.status==='failed'&&<button disabled={pending} onClick={()=>change(file.id,'POST')}>Retry processing</button>}{confirm===file.id?<><span>Remove this contribution?</span><button disabled={pending} onClick={()=>change(file.id,'DELETE')}>Remove</button><button onClick={()=>setConfirm(null)}>Cancel</button></>:<button disabled={pending} onClick={()=>setConfirm(file.id)}>Remove</button>}</div>}
-  </article>)}
-  {!!data&&data.files.length===200&&<p className={styles.small}>Showing the latest 200 contributions. Older ready notes still inform Circle AI.</p>}
- </div>;
+ const {sectionRef,height}=useFillViewport<HTMLElement>();
+ const [view,setView]=useState<'upload'|'library'>('upload');
+ const [previewFile,setPreviewFile]=useState<Upload|null>(null);
+ const [page,setPage]=useState(0);
+ const uploadDialog=useRef<HTMLDialogElement>(null);
+ const matched=data?.files||[];
+ const pageSize=Math.max(1,Math.min(8,Math.floor(((height||600)-220)/84)));
+ const pages=Math.max(1,Math.ceil(matched.length/pageSize));const currentPage=Math.min(page,pages-1);
+ function choose(){if(input.current){input.current.value='';input.current.click();}}
+ return <section ref={sectionRef} style={height===null?undefined:{height}} className={ui.filesSurface} id="class-files-surface" aria-label="Class files">
+  <input ref={input} className={ui.srOnly} tabIndex={-1} aria-label="Choose files" type="file" multiple accept={ACCEPT_FILES} disabled={pending} onChange={e=>{const selected=Array.from(e.target.files||[]);setFiles(selected);if(selected.length){setMessage('');setFailed(false);uploadDialog.current?.showModal();}}}/>
+  {view==='upload'?<>
+   <div className={ui.uploadLanding}>
+    <button className={ui.uploadTarget} type="button" onClick={choose} disabled={pending}>
+     <span className={ui.uploadSymbol}><svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 16V3m-5 5 5-5 5 5M4 15v5a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-5"/></svg></span>
+     <h1>Share your notes</h1><span className={ui.uploadSubtitle}>A little of what you know. A lot for your class.</span><span className={ui.choosePill}>Choose files</span>
+    </button>
+    <p className={ui.fileHint}>Documents, photos & audio · Up to 5 files at once</p>
+    <p className={ui.fileHint}>Shared with your class. Circle AI can learn from them.</p>
+   </div>
+   <footer className={ui.browseFooter}><button onClick={()=>setView('library')}>Browse all files</button></footer>
+  </>:<div className={ui.libraryPanel}>
+   <header className={ui.libraryHeader}><div><h1>Class files</h1><p>Your class’s shared collection.</p></div><button autoFocus className={ui.libraryClose} onClick={()=>setView('upload')} aria-label="Close class files"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></header>
+   <div className={ui.fileRows}>
+    {!data&&!error&&<p className={ui.libraryEmpty}>Loading files…</p>}
+    {data&&matched.length===0&&<p className={ui.libraryEmpty}>No files yet. Share the first notes with your class.</p>}
+    {matched.slice(currentPage*pageSize,(currentPage+1)*pageSize).map(file=><article key={file.id} className={ui.libraryRow}>
+     <span className={ui.fileType} aria-hidden="true">{file.file_name.split('.').pop()?.slice(0,4).toUpperCase()}</span>
+     <div className={ui.fileInfo}><button className={ui.fileName} onClick={()=>setPreviewFile(file)} title={file.file_name}>{file.file_name}</button><p title={file.description}>{file.description||`${file.uploader_id===userId?'You':'Classmate'} · ${new Date(file.created_at).toLocaleDateString()} · ${(file.byte_size/1e6).toFixed(1)} MB`}</p>
+     <span className={ui.badge} data-state={file.kb_assets.status} title={file.kb_assets.error||undefined}>{file.kb_assets.status==='ready'?'Ready for Circle AI':file.kb_assets.status==='failed'?'Needs attention':'Getting ready'}</span></div>
+     {file.uploader_id===userId&&<div className={ui.fileControls}>{file.kb_assets.status==='failed'&&<button disabled={pending} onClick={()=>change(file.id,'POST')}>Retry</button>}<button className={ui.removeFileIcon} title="Remove file" disabled={pending} aria-label={'Remove '+file.file_name} onClick={()=>{setMessage('');setFailed(false);setConfirm(file.id);}}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 6h18M9 6V4h6v2M5 6l1 14h12l1-14M10 10v6m4-6v6"/></svg></button></div>}
+    </article>)}
+   </div>
+   <footer className={ui.libraryFooter}><span>{matched.length} {matched.length===1?'file':'files'}{data?.files.length===200?' · Latest 200':''}</span><div><button disabled={currentPage===0} onClick={()=>setPage(currentPage-1)} aria-label="Previous file page">Previous</button><span>{currentPage+1} / {pages}</span><button disabled={currentPage+1>=pages} onClick={()=>setPage(currentPage+1)} aria-label="Next file page">Next</button></div></footer>
+  </div>}
+  {message&&<p role={failed?'alert':'status'} className={ui.fileNotice}>{message}</p>}
+  {error&&<p role="alert" className={ui.fileNotice}>{error}</p>}
+  <dialog ref={uploadDialog} className={ui.setDialog} aria-label="Upload files">
+   <header><h2>Ready to share?</h2><button type="button" disabled={pending} onClick={()=>uploadDialog.current?.close()} aria-label="Close upload">×</button></header>
+   <form onSubmit={async event=>{await submit(event);}} className={ui.uploadReview}>
+    <ul>{files.map((file,i)=><li key={i}>{file.name}<small>{(file.size/1e6).toFixed(1)} MB</small></li>)}</ul>
+    <label htmlFor="notes-context">What are you sharing? <span>Optional</span></label><textarea id="notes-context" rows={2} value={description} onChange={e=>setDescription(e.target.value)} maxLength={1000} placeholder="HW 3, lecture notes, or a bit of everything…" disabled={pending}/>
+    <p className={ui.fileHint}>Up to 5 files, 25 MB each and 29 MB total. PDFs up to 60 pages; audio up to 1 hour. No video. Upload images in Word documents separately.</p>
+    {message&&<p role={failed?'alert':'status'}>{message}</p>}
+    <button className={ui.copySet} disabled={pending||!files.length}>{pending?'Uploading…':'Share with class'}</button>
+   </form>
+  </dialog>
+  {previewFile&&<FilePreview key={previewFile.id} file={previewFile} onClose={()=>setPreviewFile(null)}/>}
+  <RemoveFileDialog error={failed?message:undefined} id={confirm} pending={pending} onCancel={()=>setConfirm(null)} onRemove={()=>confirm&&void change(confirm,'DELETE')}/>
+ </section>;
 }
-function Conversation({subspace,channel,userId,invites}:{subspace:string;channel:ChatChannelId;userId:string;invites:ChatInvite[]}) {
+function Conversation({subspace,channel,userId,invites}:{subspace:string;channel:StudyChannel;userId:string;invites:ChatInvite[]}) {
  const url=`/api/study/messages?class=${encodeURIComponent(subspace)}&channel=${channel}`;
  const {data,error,refresh}=usePoll<{messages:Message[]}>(url);
  const [draft,setDraft]=useState('');const [pending,setPending]=useState(false);const [failure,setFailure]=useState('');const [retryId,setRetryId]=useState<string|null>(null);
@@ -112,7 +163,7 @@ function Conversation({subspace,channel,userId,invites}:{subspace:string;channel
  },[draft]);
  const [caret,setCaret]=useState(0);const [mentionDismissed,setMentionDismissed]=useState(false);
  const mentionMatch=draft.slice(0,caret).match(/(?:^|\s)@([a-z]*(?: [a-z]*)?)$/i);
- const mention=mentionMatch && ['circle ai','circleai','ai','classai'].some(name=>name.startsWith(mentionMatch[1].toLowerCase())) && !mentionDismissed && !pending;
+ const mention=channel!=='ai' && mentionMatch && ['circle ai','circleai','ai','classai'].some(name=>name.startsWith(mentionMatch[1].toLowerCase())) && !mentionDismissed && !pending;
  function insertMention(){
   if(!mentionMatch)return;
   const start=caret-mentionMatch[1].length-1;const next=draft.slice(0,start)+'@Circle AI '+draft.slice(caret);
@@ -132,19 +183,19 @@ function Conversation({subspace,channel,userId,invites}:{subspace:string;channel
    {channel==='meetups'&&invites.map(invite=><article className={styles.invite} key={invite.id}><h3>{invite.title}</h3><p>{invite.when} · {invite.location}</p><FeedRsvp {...invite}/></article>)}
    {error&&<p role="alert" className={styles.error}>{error}</p>}
    {!data&&!error&&<p>Loading messages…</p>}
-   {data?.messages.length===0&&<p className={styles.empty}>Start a conversation. Mention @Circle AI to ask about shared notes or request Quizlet cards.</p>}
+   {data?.messages.length===0&&<p className={styles.empty}>{channel==='ai'?'Your private conversation with Circle AI. Ask about shared class notes or request practice cards—no mention needed.':'Start a conversation. Mention @Circle AI to ask about shared notes or request Quizlet cards.'}</p>}
    <ol className={styles.messages}>{data?.messages.map(m=><li key={m.id} className={styles.message}>
     <span className={styles.avatar} aria-hidden="true">{m.role==='assistant'?'AI':m.author_id===userId?'Y':'C'}</span><div className={styles.messageBody}>
      <div className={styles.messageMeta}><strong>{m.role==='assistant'?'Circle AI':m.author_id===userId?'You':'Classmate'}</strong><span>{new Date(m.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</span></div>
-     <p className={styles.messageText}><MentionText text={m.body}/></p>{m.role==='assistant'&&m.payload&&<Cards payload={m.payload}/>}
+     <p className={styles.messageText}>{channel==='ai'?m.body:<MentionText text={m.body}/>}</p>{m.role==='assistant'&&m.payload&&<Cards payload={m.payload}/>}
      {['queued','processing'].includes(m.ai_status)&&<p className={styles.status}>{m.ai_status==='queued'?'Circle AI is queued…':'Circle AI is reading the class notes…'}</p>}
      {m.ai_status==='failed'&&<p className={styles.error}>{m.error||'Circle AI could not respond.'} {m.author_id===userId&&<button onClick={()=>retry(m.id)}>Retry</button>}</p>}
     </div></li>)}</ol>
   </div>
-  <form onSubmit={submit} className={styles.composer}><label htmlFor="study-draft">Message #{channel}</label>
+  <form onSubmit={submit} className={styles.composer}><label htmlFor="study-draft">{channel==='ai'?'Message Circle AI':`Message #${channel}`}</label>
    <div className={ui.composerInput}>
    {mention&&<div className={ui.mention} id="ai-mention-hint"><button type="button" onMouseDown={e=>e.preventDefault()} onClick={insertMention}><span className={ui.mentionAvatar} aria-hidden="true">AI</span><span><strong>Circle AI <small>@Circle AI</small></strong></span><span className={ui.mentionKey}>Enter ↵</span></button><span className={ui.srOnly} role="status">Circle AI suggestion available. Press Enter or Tab to mention AI. Escape dismisses.</span></div>}
-   <textarea ref={composer} rows={1} id="study-draft" value={draft} disabled={pending} maxLength={2000} aria-describedby={mention?'ai-mention-hint':undefined} placeholder="Message your class, or @Circle AI make 20 cards about HW 3…" onSelect={e=>setCaret(e.currentTarget.selectionStart)} onChange={e=>{setDraft(e.target.value);setCaret(e.target.selectionStart);setMentionDismissed(false);setRetryId(null);}} onKeyDown={e=>{
+   <textarea ref={composer} rows={1} id="study-draft" value={draft} disabled={pending} maxLength={2000} aria-describedby={mention?'ai-mention-hint':undefined} placeholder={channel==='ai'?'Ask Circle AI about your class…':'Message your class, or @Circle AI make 20 cards about HW 3…'} onSelect={e=>setCaret(e.currentTarget.selectionStart)} onChange={e=>{setDraft(e.target.value);setCaret(e.target.selectionStart);setMentionDismissed(false);setRetryId(null);}} onKeyDown={e=>{
     if(e.nativeEvent.isComposing)return;
     if(mention&&e.key==='Escape'){e.preventDefault();setMentionDismissed(true);return;}
     if(mention&&(e.key==='Enter'||e.key==='Tab')&&!e.shiftKey&&!e.ctrlKey&&!e.metaKey&&!e.altKey){e.preventDefault();insertMention();return;}
@@ -157,8 +208,11 @@ function Conversation({subspace,channel,userId,invites}:{subspace:string;channel
   </form>
  </>;
 }
-export default function ClassWorkspace({subspace,userId,classLabel,initialChannel='general',invites=[]}:{subspace:string;userId:string;classLabel:string;initialChannel?:ChatChannelId;invites?:ChatInvite[]}) {
- const [channel,setChannel]=useState<ChatChannelId>(initialChannel);
+export function PrivateAIConversation({subspace,userId}:{subspace:string;userId:string}) {
+ return <div className={ui.chatSurface} style={{flex:1,minHeight:0,height:'auto'}}><Conversation subspace={subspace} userId={userId} channel="ai" invites={[]}/></div>;
+}
+export default function ClassWorkspace({subspace,userId,classLabel,initialChannel='general',invites=[]}:{subspace:string;userId:string;classLabel:string;initialChannel?:StudyChannel;invites?:ChatInvite[]}) {
+ const [channel,setChannel]=useState<StudyChannel>(initialChannel==='meetups'||initialChannel==='ai'?'general':initialChannel);
  const {sectionRef,height}=useFillViewport<HTMLElement>();
  const channelMenu=useRef<HTMLDetailsElement>(null);
  useEffect(()=>{
@@ -168,10 +222,10 @@ export default function ClassWorkspace({subspace,userId,classLabel,initialChanne
  return <section ref={sectionRef} style={height===null?undefined:{height}} className={ui.chatSurface} aria-label={classLabel+' chat'}>
   <header className={ui.chatToolbar}>
    <details ref={channelMenu} className={ui.channelPicker} id="active-conversation" onKeyDown={event=>{if(event.key==='Escape'){event.preventDefault();if(channelMenu.current){channelMenu.current.open=false;channelMenu.current.querySelector('summary')?.focus();}}}}>
-    <summary aria-label={'Choose conversation. Current: '+channel}><span aria-hidden="true">#</span>{channel[0].toUpperCase()+channel.slice(1)}<svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="m6 9 6 6 6-6"/></svg></summary>
-    <nav className={ui.channelMenu} aria-label="Conversations"><span className={ui.channelMenuLabel}>CLASS CHANNELS</span>{(['general','homework','meetups'] as const).map(name=><button key={name} type="button" aria-current={channel===name?'true':undefined} onClick={()=>{setChannel(name);if(channelMenu.current){channelMenu.current.open=false;channelMenu.current.querySelector('summary')?.focus();}}}><span aria-hidden="true">#</span><span><strong>{name[0].toUpperCase()+name.slice(1)}</strong><small>{name==='general'?'Talk with your class':name==='homework'?'Questions and problem solving':'Plan a study session'}</small></span>{channel===name&&<span className={ui.channelCheck} aria-hidden="true">✓</span>}</button>)}</nav>
+    <summary aria-label={'Choose conversation. Current: '+channel}><span aria-hidden="true">#</span>{channelLabel(channel)}<svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="m6 9 6 6 6-6"/></svg></summary>
+    <nav className={ui.channelMenu} aria-label="Conversations"><span className={ui.channelMenuLabel}>CLASS CHANNELS</span>{CLASS_CHANNELS.map(({id:name,label,description})=><button key={name} type="button" aria-current={channel===name?'true':undefined} onClick={()=>{setChannel(name);if(channelMenu.current){channelMenu.current.open=false;channelMenu.current.querySelector('summary')?.focus();}}}><span aria-hidden="true">#</span><span><strong>{label}</strong><small>{description}</small></span>{channel===name&&<span className={ui.channelCheck} aria-hidden="true">✓</span>}</button>)}</nav>
    </details>
-   <span className={ui.chatContext}>Class chat <span aria-hidden="true">·</span> @Circle AI available</span>
+   <span className={ui.chatContext}>{channel==='ai'?'Private · Only you and Circle AI':'Class chat · @Circle AI available'}</span>
   </header>
   <Conversation key={channel} subspace={subspace} channel={channel} userId={userId} invites={invites}/>
  </section>;

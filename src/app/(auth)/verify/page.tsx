@@ -10,11 +10,12 @@ export default async function VerifyPage({ searchParams }: { searchParams: Promi
   const query = await searchParams;
   const tokenHash = typeof query.token_hash === "string" ? query.token_hash : "";
   const type = typeof query.type === "string" ? query.type : "email";
+  const usableToken = /^[a-zA-Z0-9_-]{20,256}$/.test(tokenHash) && ["signup", "email"].includes(type);
   return <>
-    {tokenHash ? <AuthVerify tokenHash={tokenHash} type={type} /> : <div className="auth-confirm">
+    {usableToken ? <AuthVerify tokenHash={tokenHash} type={type} /> : <div className="auth-confirm">
       <h2>Check your inbox.</h2>
       <p>Open the confirmation link in your Cal Poly email. If you don’t see it, take a quick look in spam.</p>
-      {query.error && <p role="alert" className="auth-status">We couldn’t confirm your email. Try opening the link again in the browser where you signed up. If that doesn’t work, request another email below or try logging in.</p>}
+      {(query.error || tokenHash || query.type) && <p role="alert" className="auth-status">{type === "recovery" ? "This is a password recovery link. Password reset is not available here yet. Return to login or contact the StudyCircle team for help." : "We couldn’t confirm your email. Try opening the link again in the browser where you signed up. If that doesn’t work, request another email below or try logging in."}</p>}
     </div>}
     <AuthForm mode="resend" />
   </>;

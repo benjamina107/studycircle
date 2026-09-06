@@ -1,0 +1,17 @@
+import {config} from 'dotenv';config({path:'.env.local',quiet:true});
+import {randomUUID} from 'node:crypto';import assert from 'node:assert/strict';import {adminClient,checked} from '../src/lib/knowledge/admin';
+async function main(){if(!process.argv.includes('--run'))throw new Error('Use --run for temporary hosted test accounts.');const db=adminClient(),id='dm-check-'+randomUUID(),origin='http://127.0.0.1:3000';const users:string[]=[],cookies:string[]=[];try{
+checked(await db.from('courses').insert({id,code:id,title:'DM verification',term:'Test'}));checked(await db.from('professors').insert({id,name:'DM verification'}));checked(await db.from('sections').insert({id,course_id:id,professor_id:id,section_code:'01',days:'M'}));checked(await db.from('spaces').insert({id,course_id:id}));checked(await db.from('subspaces').insert({id,space_id:id,professor_id:id}));
+for(let i=0;i<3;i++){const email=id+i+'@calpoly.edu',password=randomUUID()+'Aa1!';const u=await db.auth.admin.createUser({email,password,email_confirm:true,user_metadata:{name:'Temporary DM test '+i}});if(u.error)throw u.error;users.push(u.data.user.id);checked(await db.from('enrollments').insert({user_id:u.data.user.id,section_id:id}));const r=await fetch(origin+'/api/auth/login',{method:'POST',headers:{Origin:origin,'Content-Type':'application/json'},body:JSON.stringify({email,password})});assert.equal(r.status,200);cookies.push(r.headers.getSetCookie().map(c=>c.split(';')[0]).join('; '));}
+const endpoint=origin+'/api/classmates?class='+id;
+async function call(i:number,url:string,method='GET',body?:unknown){const r=await fetch(url,{method,headers:{Origin:origin,Cookie:cookies[i],'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});return {status:r.status,data:await r.json()};}
+const mid=randomUUID(),body={id:mid,peer:users[1],body:'Private fixture message'};
+assert.equal((await call(0,endpoint,'POST',body)).status,201);assert.equal((await call(0,endpoint,'POST',body)).status,200);
+assert.equal((await call(1,endpoint+'&peer='+users[0])).data.messages[0].body,body.body);
+assert.equal((await call(2,endpoint+'&peer='+users[0])).data.messages.length,0);
+const directory=(await call(1,endpoint)).data.members;assert.equal(Number(directory.find((m:{id:string})=>m.id===users[0]).unread),1);assert.ok(!('email' in directory[0]));
+assert.equal((await call(1,endpoint,'PATCH',{peer:users[0],ids:[mid]})).status,200);assert.equal(Number((await call(1,endpoint)).data.members.find((m:{id:string})=>m.id===users[0]).unread),0);
+checked(await db.from('enrollments').delete().eq('user_id',users[1]).eq('section_id',id));assert.equal((await call(0,endpoint,'POST',{...body,id:randomUUID()})).status,403);
+console.log('PASS: delivery, idempotent retry, third-party isolation, unread/read state, no email disclosure, former-member rejection.');
+}finally{await db.from('class_direct_messages').delete().eq('subspace_id',id);await db.from('enrollments').delete().eq('section_id',id);await db.from('subspaces').delete().eq('id',id);await db.from('spaces').delete().eq('id',id);await db.from('sections').delete().eq('id',id);await db.from('courses').delete().eq('id',id);await db.from('professors').delete().eq('id',id);for(const u of users){await db.from('kb_quotas').delete().eq('user_id',u);await db.auth.admin.deleteUser(u);}console.log('Temporary DM fixtures removed.');}}
+main().catch(e=>{console.error(e.message);process.exitCode=1;});
