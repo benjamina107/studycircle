@@ -3,4 +3,12 @@
 @media(max-width:600px){.screen{padding:0 0 20px}.header{gap:10px;margin-bottom:24px}.header h1{font-size:25px}.header p{font-size:12px}.header .primary{font-size:12px;padding:9px 11px}.filters button{padding:8px 11px;font-size:12px}.card{gap:14px}.dateTile{width:52px;height:76px}.dateTile strong{font-size:25px}.card h3{font-size:18px}.card time{font-size:11px}.cardFooter{gap:8px;flex-wrap:wrap}.dialog{padding:24px 20px}.form h2{font-size:22px}.zone{font-size:10px}}
 
 .createControl>button.primary{display:inline-flex;align-items:center;justify-content:center;gap:7px;height:36px;min-height:36px;padding:0 12px;line-height:1;box-sizing:border-box}.createControl>button.primary svg{flex-shrink:0}
+.primary,.secondary,.danger{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;line-height:1.2}
+.organizer>.badge{display:inline-flex;align-items:center;justify-content:center;min-height:36px;box-sizing:border-box;padding:0 12px}
+.organizer>.buttons{align-items:center;flex-wrap:wrap}
+.organizer>.buttons>form{display:flex;margin:0}
+.organizer>.buttons button{height:36px;min-height:36px;padding:0 14px}
+.organizer>.hint{flex-basis:100%;margin:4px 0 0;text-align:right}
+.buttons{align-items:center;flex-wrap:wrap}
+.close{padding:0;line-height:1}
 .cancelled,.past{font-size:11px;padding:5px 9px;border-radius:6px}.cancelled{color:light-dark(#9a4c3d, var(--night-danger));background:light-dark(#f6e5df, var(--night-raised))}.past{color:light-dark(#697567, var(--night-muted));background:light-dark(#edf0ea, var(--night-raised))}.inactiveCard{opacity:.76}.history{margin-top:36px}.history>h2{font-size:14px;color:light-dark(#65745e, var(--night-muted));margin:0;border-bottom:1px solid light-dark(#dfe5d7, var(--night-border));padding-bottom:10px}.organizer{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}.organizer>.buttons{display:flex;gap:8px;padding:0}.danger{border:0;border-radius:9px;padding:10px 16px;font-size:13px;font-weight:550;cursor:pointer;min-height:40px;color:light-dark(#973f34, var(--night-danger));background:light-dark(#f6e5df, var(--night-raised))}

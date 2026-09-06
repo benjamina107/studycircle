@@ -1,3 +1,9 @@
+## Six-digit signup verification (September 6, 2026)
+
+Signup confirmation now uses `{{ .Token }}` in `supabase/templates/confirmation.html` and hosted `mailer_otp_length=6`. The `/verify` screen accepts the email and six-digit code, with paste/autofill and a resend cooldown. The API verifies signup OTPs, rate-limits attempts, and creates the usual authenticated session. Existing emailed token-hash links still work during transition.
+
+The hosted template and code length are applied. Deploy this frontend/API change together with the template when rolling out to other environments. `npx tsx scripts/check-email-code-live.ts --run` checks real generated signup codes without sending email and deletes its disposable account afterward. The notes below describe the earlier link-based setup.
+
 # Resend delivery for Supabase Auth
 
 ## Current confirmation flow (September 6, 2026)

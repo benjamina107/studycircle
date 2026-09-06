@@ -1,7 +1,7 @@
 import AuthLinkNotice from "@/components/AuthLinkNotice";
 import {getCurrentUser} from "@/lib/auth";
 import {redirect} from "next/navigation";
-import AuthForm from "@/components/AuthForm";
+import AuthCodeVerify from "@/components/AuthCodeVerify";
 import AuthVerify from "@/components/AuthVerify";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 
@@ -22,6 +22,6 @@ export default async function VerifyPage({ searchParams }: { searchParams: Promi
     : "";
   return <>
     {usableToken ? <AuthVerify tokenHash={tokenHash} type={type} /> : <AuthLinkNotice errorMessage={errorMessage} />}
-    {!usableToken && <AuthForm mode="resend" />}
+    {!usableToken && <AuthCodeVerify />}
   </>;
 }
