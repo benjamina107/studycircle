@@ -66,7 +66,7 @@ test("auth routes and pages offer recovery without exposing account or service d
       }
       result = failed("unexpected_failure", 500);
       const unavailable = await snapshot(await signup(request("signup")));
-      assert.equal(unavailable.status, 400);
+      assert.equal(unavailable.status, 503);
       assert.match(unavailable.body.error, /try again shortly/);
       result = failed("over_request_rate_limit", 429);
       assert.equal((await snapshot(await signup(request("signup")))).status, 429);
@@ -93,15 +93,15 @@ test("auth routes and pages offer recovery without exposing account or service d
       }
       result = failed("unexpected_failure", 500);
       const response = await snapshot(await resend(request("resend")));
-      assert.equal(response.status, 400);
-      assert.match(response.body.error, /Wait a minute and try again/);
+      assert.equal(response.status, 503);
+      assert.match(response.body.error, /try again shortly/);
     });
 
     await t.test("login uses identical failures for missing, incorrect and unconfirmed accounts", async () => {
       result = failed("invalid_credentials");
       const expected = await snapshot(await login(request("login")));
       assert.equal(expected.status, 401);
-      for (const code of ["user_not_found", "email_not_confirmed", "unexpected_failure"]) {
+      for (const code of ["user_not_found", "email_not_confirmed"]) {
         result = failed(code);
         assert.deepEqual(await snapshot(await login(request("login"))), expected);
       }
@@ -113,7 +113,7 @@ test("auth routes and pages offer recovery without exposing account or service d
 
     await t.test("confirmation only mentions expiry for a known link error", async () => {
       const fields = { token_hash: "a".repeat(32), type: "signup" };
-      for (const code of ["unexpected_failure", "over_request_rate_limit", "unknown_future_error"]) {
+      for (const code of ["unknown_future_error"]) {
         result = failed(code);
         const response = await snapshot(await verify(request("verify", fields)));
         assert.equal(response.status, 400);
@@ -144,6 +144,35 @@ test("auth routes and pages offer recovery without exposing account or service d
       try {
         assert.equal((await snapshot(await callback(new Request("https://studycircle.example/api/auth/callback")))).status, 503);
       } finally { process.env.APP_URL = "https://studycircle.example"; }
+    });
+
+    await t.test("operational errors remain distinct from credentials across all handlers", async () => {
+      for (const handler of [signup, resend, login, verify]) {
+        for (const [code, status, expected] of [["network_failure", 0, 503], ["unexpected_failure", 500, 503], ["over_email_send_rate_limit", 429, 429]] as const) {
+          result = failed(code, status);
+          const response = await snapshot(await handler(request("test", { token_hash: "a".repeat(32), type: "email" })));
+          assert.equal(response.status, expected);
+          assert.doesNotMatch(response.body.error, /password|expired/);
+        }
+      }
+    });
+
+    await t.test("successful login, verification, callback and logout keep their intended destinations", async () => {
+      result = { error: null, data: { user: { email: "student@calpoly.edu", email_confirmed_at: "today" }, session: {} } };
+      assert.deepEqual((await snapshot(await login(request("login")))).body, { next: "/profile" });
+      assert.deepEqual((await snapshot(await verify(request("verify", { token_hash: "a".repeat(32), type: "email" })))).body, { next: "/profile" });
+      const redirect = await callback(new Request("https://studycircle.example/api/auth/callback?code=test"));
+      assert.equal(redirect.headers.get("location"), "https://studycircle.example/profile");
+      const logout = load("./logout/route").POST;
+      assert.deepEqual((await snapshot(await logout(request("logout")))).body, { next: "/login" });
+    });
+
+    await t.test("verification rejects unsupported recovery tokens and clears unconfirmed sessions", async () => {
+      assert.equal((await snapshot(await verify(request("verify", { token_hash: "a".repeat(32), type: "recovery" })))).status, 400);
+      result = { error: null, data: { user: {}, session: {} } };
+      const before = signouts;
+      assert.equal((await snapshot(await verify(request("verify", { token_hash: "a".repeat(32), type: "email" })))).status, 400);
+      assert.equal(signouts, before + 1);
     });
 
     await t.test("unavailable pages and callback alert give plain next steps", async () => {
