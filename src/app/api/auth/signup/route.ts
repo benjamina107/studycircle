@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { apiError, authFailure, json, rateLimit } from "../_utils";
-import { applicationOrigin, assertSameOrigin, calPolyEmail, passwordInput, readJson, textInput } from "../validation";
+import { requestApplicationOrigin, assertSameOrigin, calPolyEmail, passwordInput, readJson, textInput } from "../validation";
 
 export async function POST(request: Request) {
   try {
@@ -13,7 +13,7 @@ export async function POST(request: Request) {
     const supabase = await createClient();
     const { data, error } = await supabase.auth.signUp({
       email, password,
-      options: { data: { name }, emailRedirectTo: `${applicationOrigin(request.url)}/api/auth/callback` },
+      options: { data: { name }, emailRedirectTo: `${requestApplicationOrigin(request)}/verify` },
     });
     // Match the accepted response for existing accounts to avoid revealing membership.
     if (error && !["user_already_exists", "email_exists"].includes(error.code || "")) return authFailure(error, "signup");

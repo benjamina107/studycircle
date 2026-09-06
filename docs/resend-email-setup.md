@@ -1,5 +1,13 @@
 # Resend delivery for Supabase Auth
 
+## Current confirmation flow (September 6, 2026)
+
+New signup/resend emails use the token-hash template in
+`supabase/templates/confirmation.html` and return to `/verify`. Confirmation
+happens only after the student clicks the app's confirmation button. Both local
+hostnames have exact redirect entries. See [auth audit](auth-audit-20260906.md)
+for the applied settings and validation. Previously sent links are unchanged.
+
 ## Status
 
 Resend reports `studycircles.me` as verified. The domain is registered through

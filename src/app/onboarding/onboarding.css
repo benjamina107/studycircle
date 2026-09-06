@@ -16,3 +16,63 @@
 .onboarding-form .workspace-notice { font-size:12px; color:#793f31; padding:13px 16px; border:1px solid #e4c6b9; background:#faf0e9; border-radius:9px; line-height:1.6; }
 .onboarding-form :is(input,textarea,button):focus-visible { outline:2px solid #637747; outline-offset:3px; }
 @media(max-width:600px) { .onboarding-header { margin-bottom:38px; }.onboarding-card { padding:24px 20px; }.onboarding-card h1 { font-size:30px; } }
+.onboarding-steps { display:flex; gap:24px; margin-bottom:30px; font-size:12px; color:#8b9386; }
+.onboarding-steps [aria-current=step] { color:#304b3b; font-weight:650; }
+.onboarding-class-card { max-width:720px; }
+.class-setup { display:grid; gap:18px; }
+.class-setup h1,.class-setup .onboarding-eyebrow,.class-setup .onboarding-intro { margin:0; }
+.class-setup .onboarding-intro { max-width:540px; margin-bottom:8px; }
+.schedule-guide { list-style:none; padding:0; margin:4px 0 10px; display:grid; gap:20px; }
+.schedule-guide li { display:flex; gap:14px; align-items:flex-start; }
+.schedule-guide li>span { display:grid; place-items:center; flex:none; width:28px; height:28px; border-radius:50%; background:#e9eedf; color:#48623d; font-size:12px; font-weight:600; }
+.schedule-guide strong { display:block; font-size:14px; font-weight:600; margin:3px 0 5px; }
+.schedule-guide p { font-size:13px; line-height:1.6; color:#697365; margin:0; }
+.schedule-guide a { color:#405f3d; text-underline-offset:3px; }
+.schedule-file-input { position:absolute; width:1px; height:1px; padding:0; clip-path:inset(50%); overflow:hidden; }
+.schedule-drop { width:100%; display:flex; flex-direction:column; align-items:center; gap:10px; background:#f3f5ed; border:1px dashed #b4c4a6; border-radius:14px; padding:30px 18px; color:#405f3d; cursor:pointer; }
+.schedule-drop:hover { background:#edf1e6; border-color:#718960; }
+.schedule-drop strong { font-size:15px; font-weight:600; }.schedule-drop span { font-size:12px; color:#718067; }
+.class-setup button { font-family:inherit; }
+.class-setup button:disabled { opacity:.5; cursor:default; }
+.schedule-primary { display:inline-flex; align-items:center; justify-content:center; border:0; border-radius:9px; background:#304b3b; color:#fffefa; min-height:44px; padding:12px 18px; font-size:14px; font-weight:550; cursor:pointer; }
+.schedule-primary:hover:not(:disabled) { background:#405f3d; }
+.schedule-text-button { justify-self:center; background:none; border:0; padding:6px; font-size:13px; color:#60784e; text-decoration:underline; text-underline-offset:4px; cursor:pointer; }
+.schedule-privacy { text-align:center; font-size:11px; line-height:1.6; color:#7a8273; margin:0; }
+.schedule-status { font-size:13px; color:#60784e; line-height:1.6; margin:0; }
+.schedule-previews { display:flex; gap:12px; overflow-x:auto; }
+.schedule-previews figure { margin:0; min-width:0; width:110px; flex:none; }
+.schedule-previews img { height:120px; width:100%; object-fit:contain; background:#edf0e7; border-radius:8px; }
+.schedule-previews figcaption { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:10px; color:#697365; margin-top:5px; }
+.schedule-review { border-top:1px solid #e0e5d7; padding-top:24px; margin-top:8px; }
+.schedule-review h2 { font-size:23px; font-weight:550; letter-spacing:-.5px; margin:0 0 7px; }
+.schedule-review>p { font-size:13px; color:#697365; line-height:1.6; margin:0 0 16px; }
+.schedule-review ul,.schedule-search-results { list-style:none; padding:0; margin:0; }
+.schedule-review li { padding:18px 0; border-top:1px solid #e7eade; }
+.schedule-match-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.schedule-match-heading strong { font-size:14px; font-weight:650; }.schedule-match-heading span { font-size:12px; color:#7a8273; }
+.schedule-match-heading p { color:#697365; font-size:12px; margin:5px 0 12px; }
+.schedule-remove { flex:none; display:grid; place-items:center; width:30px; height:30px; line-height:1; border:0; border-radius:50%; font-size:22px; color:#79816e; background:transparent; cursor:pointer; }.schedule-remove:hover { background:#edf0e7; }
+.schedule-professor { display:grid; gap:6px; font-size:11px; color:#697365; }
+.schedule-professor select,.schedule-manual input { min-width:0; width:100%; border:1px solid #d6dccf; background:#fffefa; border-radius:8px; padding:11px 12px; color:#253d33; font:inherit; font-size:13px; }
+.schedule-professor select { appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%23718167' viewBox='0 0 24 24'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 12px center; padding-right:35px; }
+.schedule-unmatched { color:#8a6840; font-size:12px; line-height:1.5; }
+.schedule-footer { display:flex; flex-direction:column; align-items:stretch; gap:12px; margin-top:8px; border-top:1px solid #e0e5d7; padding-top:22px; }
+.schedule-back { text-align:center; color:#7a8273; font-size:11px; text-decoration:none; }
+.schedule-notice { border:1px solid #dfccb7; border-radius:9px; background:#faf3e8; padding:12px 15px; font-size:13px; line-height:1.6; color:#805c38; margin:0; }
+.schedule-manual form label { font-size:12px; display:block; margin-bottom:8px; }.schedule-manual form>div { display:flex; gap:8px; }
+.schedule-search-results li { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 0; border-bottom:1px solid #e7eade; }
+.schedule-search-results strong { display:block; font-size:13px; }.schedule-search-results span { display:block; font-size:12px; color:#697365; margin-top:5px; }
+.schedule-search-results button,.schedule-pagination button { background:#edf1e6; border:0; color:#48623d; border-radius:7px; font-size:12px; padding:8px 11px; cursor:pointer; }
+.schedule-pagination { display:flex; align-items:center; justify-content:space-between; margin:18px 0; font-size:12px; color:#697365; }
+.class-setup :is(input,select):focus-visible,.onboarding-form :is(input,textarea):focus-visible { outline:none; border-color:#7e976c; box-shadow:0 0 0 1px #7e976c; }
+.class-setup :is(button,a):focus-visible { outline:2px solid #7e976c; outline-offset:3px; }
+@media(max-width:600px){.onboarding-class-card {padding:24px 20px;}.schedule-guide {gap:18px;}.schedule-drop {padding:24px 12px;}.schedule-drop span {font-size:11px;}.schedule-manual form>div {flex-wrap:wrap;}.schedule-manual input {flex:1;min-width:160px;}}
+/* Keep setup readable when a returning student has enabled dark mode. */
+:root[data-theme=dark] .onboarding-shell { background:var(--background); color:var(--night-text); }
+:root[data-theme=dark] .onboarding-card { background:var(--night-surface); border-color:var(--night-border); }
+:root[data-theme=dark] :is(.onboarding-brand,.onboarding-steps [aria-current=step],.schedule-guide a,.schedule-text-button) { color:var(--night-accent); }
+:root[data-theme=dark] :is(.onboarding-intro,.onboarding-header,.onboarding-eyebrow,.schedule-guide p,.schedule-privacy,.schedule-review>p,.schedule-match-heading p,.schedule-professor,.schedule-search-results span,.schedule-pagination,.schedule-back) { color:var(--night-muted); }
+:root[data-theme=dark] :is(.schedule-drop,.schedule-guide li>span,.schedule-search-results button,.schedule-pagination button) { background:var(--night-raised); color:var(--night-accent); border-color:var(--night-border); }
+:root[data-theme=dark] :is(.schedule-professor select,.schedule-manual input,.onboarding-form .workspace-input) { background:var(--night-surface); color:var(--night-text); border-color:var(--night-border); }
+:root[data-theme=dark] :is(.schedule-review,.schedule-review li,.schedule-footer,.schedule-search-results li) { border-color:var(--night-border); }
+:root[data-theme=dark] .schedule-notice { background:var(--night-raised); color:var(--night-warning); border-color:var(--night-border); }

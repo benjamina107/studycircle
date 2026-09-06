@@ -23,6 +23,8 @@ test("auth routes and pages offer recovery without exposing account or service d
   let result: unknown;
   let failure: Error | undefined;
   let configured = false;
+  let signedIn = false;
+  stub("../../../lib/auth", {getCurrentUser:async()=>signedIn?{id:"student"}:null});
   let signouts = 0;
   const respond = async () => { if (failure) throw failure; return result; };
   stub("../../../lib/supabase/server", { createClient: async () => ({ auth: {
@@ -173,6 +175,16 @@ test("auth routes and pages offer recovery without exposing account or service d
       const before = signouts;
       assert.equal((await snapshot(await verify(request("verify", { token_hash: "a".repeat(32), type: "email" })))).status, 400);
       assert.equal(signouts, before + 1);
+    });
+
+    await t.test("already signed-in users leave auth forms and token links never exchange on GET", async () => {
+      configured=true;signedIn=true;
+      try {for(const path of ["../../(auth)/login/page","../../(auth)/signup/page","../../(auth)/verify/page"]){
+        await assert.rejects(load(path).default({searchParams:Promise.resolve({})}),/NEXT_REDIRECT/);
+      }}finally{signedIn=false;configured=false;}
+      const token="b".repeat(32);
+      const response=await callback(new Request(`https://studycircle.example/api/auth/callback?token_hash=${token}&type=email`));
+      assert.equal(response.headers.get("location"),`https://studycircle.example/verify?token_hash=${token}&type=email`);
     });
 
     await t.test("unavailable pages and callback alert give plain next steps", async () => {

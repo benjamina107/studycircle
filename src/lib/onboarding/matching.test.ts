@@ -1,0 +1,9 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';
+import {matchClasses,type CatalogCourse} from './matching';
+const course:CatalogCourse={id:'c1',code:'CSC 3665',title:'Databases',term:'Fall',sections:[{id:'s1',course_id:'c1',professor_id:'p1',section_code:'S15',professors:{name:'Alice Smith'}},{id:'s2',course_id:'c1',professor_id:'p1',section_code:'S16',professors:{name:'Alice Smith'}},{id:'s3',course_id:'c1',professor_id:'p2',section_code:'S02',professors:{name:'Bob Jones'}}]};
+const row=(sectionCode:string|null)=>({courseCode:'CSC-3665',sectionCode,professorName:null,term:null});
+test('section code resolves instructor without inventing a separate lab group',()=>{const result=matchClasses([row('S15'),row('S16')],[course]);assert.equal(result.length,2);assert.equal(result[0].selected,result[1].selected);assert.equal(result[0].selected,'s1');assert.equal(result[0].options.length,2);});
+test('ambiguous, wrong sections and conflicting professors require a choice',()=>{for(const r of [row(null),row('S99'),{...row('S15'),professorName:'Bob Jones'}])assert.equal(matchClasses([r],[course])[0].selected,'');});
+test('unknown and unassigned courses never auto-enroll',()=>{assert.equal(matchClasses([{...row('S15'),courseCode:'CSC 9999'}],[course])[0].options.length,0);assert.equal(matchClasses([row('S15')],[{...course,sections:[{...course.sections[0],professor_id:null,professors:null}]}])[0].selected,'');});
+test('duplicate screenshots collapse and cross-term ambiguity is preserved',()=>{assert.equal(matchClasses([row('S15'),row('S15')],[course]).length,1);assert.equal(matchClasses([row('S15')],[course,{...course,id:'c2',term:'Winter',sections:[{...course.sections[0],id:'s4',course_id:'c2'}]}])[0].selected,'');});
+test('explicitly different term does not silently select an offering',()=>assert.equal(matchClasses([{...row('S15'),term:'Winter'}],[course])[0].selected,''));

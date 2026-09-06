@@ -26,7 +26,8 @@
     "test:catalog": "tsx --test src/lib/catalog-validation.test.ts",
     "worker": "tsx scripts/knowledge-worker.ts",
     "test:knowledge": "tsx --test src/lib/knowledge/*.test.ts",
-    "test:markdown": "tsx --test src/components/study/AIMessage.test.tsx"
+    "test:markdown": "tsx --test src/components/study/AIMessage.test.tsx",
+    "test:onboarding": "tsx --test src/lib/onboarding/*.test.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.5",

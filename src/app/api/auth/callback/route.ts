@@ -1,13 +1,22 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { applicationOrigin, calPolyEmail } from "../validation";
+import { requestApplicationOrigin, calPolyEmail } from "../validation";
 import { apiError } from "../_utils";
 
 export async function GET(request: Request) {
   let origin: string;
-  try { origin = applicationOrigin(request.url); }
+  try { origin = requestApplicationOrigin(request); }
   catch (error) { return apiError(error); }
-  const code = new URL(request.url).searchParams.get("code");
+  const params = new URL(request.url).searchParams;
+  const tokenHash = params.get("token_hash");
+  const type = params.get("type") || "email";
+  // Legacy redirect targets can receive the new template too. Never consume a
+  // one-time token during GET: email scanners and previews follow links.
+  if (tokenHash && /^[a-zA-Z0-9_-]{20,256}$/.test(tokenHash) && ["email","signup"].includes(type)) {
+    const target=new URL("/verify",origin);target.searchParams.set("token_hash",tokenHash);target.searchParams.set("type",type);
+    return NextResponse.redirect(target,{headers:{"Cache-Control":"no-store","Referrer-Policy":"no-referrer"}});
+  }
+  const code = params.get("code");
   if (code && code.length < 2048) {
     try {
       const supabase = await createClient();

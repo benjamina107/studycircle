@@ -1,13 +1,12 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { createAuthRequest } from "@/lib/auth-request";
 
 /** Kept with authentication so logout does not depend on notification settings. */
 export default function AuthLogout() {
-  const router = useRouter();
   const request = useRef(createAuthRequest());
+  useEffect(()=>{const run=request.current;return()=>run.cancel();},[]);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
   async function logout() {
@@ -17,8 +16,7 @@ export default function AuthLogout() {
     try {
       const response = await request.current("/api/auth/logout");
       if (!response) return;
-      router.replace("/login");
-      router.refresh();
+      window.location.replace("/login");
     } catch (error) { setError(error instanceof Error ? error.message : "We couldn’t confirm that you’re logged out. Please try again."); setPending(false); }
   }
   return <div className="space-y-2">
