@@ -21,7 +21,7 @@ export default async function ProfilePage({ searchParams }: { searchParams: Prom
   ]);
   const enrolledIds = (memberships.data || []).map(item => item.section_id);
   const enrolled = enrolledIds.length ? await supabase.from("sections").select(sectionSelect).in("id", enrolledIds).returns<CourseSection[]>() : { data: [], error: null };
-  return <main>
+  return <main className="profile-page">
     <header className="page-heading"><h1>Profile</h1><p>Manage your classes, professors, and personal details.</p></header>
     <form action="/profile#classes" className="enrollment-search"><label className="workspace-field">Find a course<input name="course" defaultValue={search} placeholder="Course code, e.g. CSC 202" maxLength={40} className="workspace-input" /></label><button className="workspace-secondary">Search</button></form>
     {catalog.error || memberships.error || enrolled.error ? <p role="alert" className="workspace-notice">Your classes couldn’t be loaded. Please refresh and try again.</p> : <><EnrollmentForm sections={catalog.data || []} enrolled={enrolled.data || []} />{catalog.data?.length === 100 && <p className="workspace-hint">Showing up to 100 sections. Search by course code to narrow the list.</p>}</>}
