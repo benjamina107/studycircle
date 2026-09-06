@@ -49,6 +49,15 @@ try {
  await workerTick();
  const answer=checked(await db.from('study_messages').select('body,payload').eq('reply_to',messageId).single());assert.ok(answer?.payload.cards.length>=2);assert.ok(answer?.payload.sources.length);
  assert.ok(quizletText(answer.payload.cards).split('\n').every(row=>row.split('\t').length===2));console.log('PASS: sourced AI cards generated, saved, and serialized for Quizlet.');
+ for(let i=0;i<7;i++) {
+  const filler=await fetch(origin+`/api/study/messages?class=${id}`,{method:'POST',headers:{...headers,'Content-Type':'application/json'},body:JSON.stringify({id:randomUUID(),channel:'general',body:`Study check-in ${i+1}.`})});assert.equal(filler.status,201);
+ }
+ const followupId=randomUUID();
+ const followup=await fetch(origin+`/api/study/messages?class=${id}`,{method:'POST',headers:{...headers,'Content-Type':'application/json'},body:JSON.stringify({id:followupId,channel:'general',body:'@AI update the practice set from earlier: reverse the order of its cards, preserving every question and answer exactly. Return the full set.'})});assert.equal(followup.status,201);
+ await workerTick();
+ const revised=checked(await db.from('study_messages').select('payload').eq('reply_to',followupId).single());
+ assert.deepEqual(revised?.payload.cards,[...answer.payload.cards].reverse());
+ console.log('PASS: follow-up retrieves cards beyond six messages and returns the exact revised set.');
  if(process.argv.includes('--hold-ui')) {
   await writeFile('/tmp/studycircle-ui-fixture.json',JSON.stringify({email:id+'@calpoly.edu',password,classUrl:origin+'/spaces/'+id+'/'+id+'/chat',release:'/tmp/studycircle-ui-release'}),{mode:0o600});
   console.log('UI fixture ready. Waiting up to 10 minutes for /tmp/studycircle-ui-release.');

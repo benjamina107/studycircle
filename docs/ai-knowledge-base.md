@@ -36,7 +36,7 @@ Install FFmpeg/ffprobe on the worker and web server for audio validation. Overri
 3. SHA-256 deduplicates processing within a class, including concurrent contributions. A duplicate still retains its own original and ownership.
 4. Worker extracts text, PDF pages, images, and audio. PDF pages and images use vision extraction; DOCX uses text extraction and ignores embedded images, explicitly disclosed in the uploader. Unreadable visual content is marked uncertain rather than intentionally filled in.
 5. Passages retain locators and overlapping context, and receive embeddings in Postgres/pgvector. No generated summary is the source of truth.
-6. An AI request retrieves relevant passages with semantic and lexical ranking, reduces near-duplicates, and includes varied sources. The model receives nearby channel conversation for follow-ups, and source content is explicitly treated as untrusted data.
+6. An AI request retrieves relevant passages with semantic and lexical ranking, reduces near-duplicates, and includes varied sources. The model receives the previous 20 channel messages, including saved cards and source references, for follow-ups, and source content is explicitly treated as untrusted data.
 7. Structured output is validated. Source IDs must belong to retrieved passages. Quizlet formatting is deterministic, with tabs/newlines removed from individual question/answer fields. Only actual separators are inserted.
 
 ## Access, deletion, and operational limits
