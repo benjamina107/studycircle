@@ -7,7 +7,7 @@
     "test:profiles": "node --test tests/profiles.test.mjs",
     "check:supabase": "node scripts/check-supabase.mjs",
     "check:email": "node scripts/check-auth-email.mjs",
-    "dev": "next dev",
+    "dev": "next dev --webpack",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",

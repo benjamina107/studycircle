@@ -3,6 +3,7 @@ import AuthVerify from "@/components/AuthVerify";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 
 export const metadata = { referrer: "no-referrer" as const, robots: { index: false, follow: false } };
+export const dynamic = "force-dynamic";
 
 export default async function VerifyPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   if (!isSupabaseConfigured()) return <p role="status">Email confirmation is currently unavailable. Please try again later.</p>;

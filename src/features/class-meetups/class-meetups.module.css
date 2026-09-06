@@ -21,6 +21,9 @@
 .field [aria-invalid="true"] { border-color: #a5372c; }
 .error { color: #923127; font-size: .9rem; margin: 4px 0; }
 .buttons, .rsvp { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.organizer { display: grid; gap: 12px; margin-top: 18px; }
+.danger { border-radius: 8px; padding: 10px 16px; min-height: 44px; border: 1px solid #a5372c; background: #fff; color: #923127; font: inherit; font-weight: 600; cursor: pointer; }
+.danger:hover { background: #fff2f0; }
 .rsvp { margin-top: 18px; }
 .rsvp p { flex-basis: 100%; margin: 0; }
 .feed { display: grid; gap: 16px; list-style: none; margin: 18px 0 0; padding: 0; }
@@ -28,5 +31,7 @@
 .card time { color: #42564a; font-size: .95rem; }
 .location { margin: 10px 0; font-weight: 550; }
 .blurb { white-space: pre-wrap; line-height: 1.6; margin: 12px 0; }
+.attendance { margin: 12px 0 0; color: #42564a; font-size: .9rem; font-weight: 600; }
+.cancelled { color: #923127; font-weight: 650; margin: 16px 0 0; }
 .badge { color: #245138; background: #eaf3eb; border-radius: 6px; padding: 7px 10px; font-size: .85rem; display: inline-block; }
 .notice { background: #f6f8f5; margin-top: 16px; line-height: 1.6; }

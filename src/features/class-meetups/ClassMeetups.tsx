@@ -2,31 +2,34 @@ import { requireUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { meetupTime } from "@/lib/feed";
 import { canAccessClass } from "./access";
-import { ClassRsvp, CreateMeetup } from "./MeetupControls";
+import { ClassRsvp, CreateMeetup, OrganizerControls } from "./MeetupControls";
 import styles from "./class-meetups.module.css";
 
-type Meetup = { id: string; title: string; blurb: string | null; location_name: string; starts_at: string; creator_id: string };
+type Meetup = { id: string; title: string; blurb: string | null; location_name: string; starts_at: string; creator_id: string; cancelled_at: string | null };
 
 export default async function ClassMeetups({ spaceId, subspaceId }: { spaceId: string; subspaceId: string }) {
   const user = await requireUser();
   let meetups: Meetup[] = [];
-  let joinedIds = new Set<string>();
+  let attendees = new Map<string, string[]>();
   let failure = "";
   try {
     const db = await createClient();
     if (!await canAccessClass(db, spaceId, subspaceId)) {
       failure = "This class is unavailable. Refresh and check your enrollment.";
     } else {
-      const result = await db.from("meetups").select("id,title,blurb,location_name,starts_at,creator_id,time_zone")
+      const result = await db.from("meetups").select("id,title,blurb,location_name,starts_at,creator_id,time_zone,cancelled_at")
         .eq("subspace_id", subspaceId).gt("starts_at", new Date().toISOString())
         .order("starts_at", { ascending: true }).order("id", { ascending: true }).limit(100);
       if (result.error) throw new Error("read failed");
       meetups = result.data ?? [];
       if (meetups.length) {
-        const attendance = await db.from("meetup_attendees").select("meetup_id")
-          .eq("user_id", user.id).in("meetup_id", meetups.map(meetup => meetup.id));
+        const attendance = await db.from("meetup_attendees").select("meetup_id,user_id")
+          .in("meetup_id", meetups.map(meetup => meetup.id));
         if (attendance.error) throw new Error("attendance failed");
-        joinedIds = new Set((attendance.data ?? []).map(row => row.meetup_id as string));
+        for (const row of attendance.data ?? []) {
+          const id = row.meetup_id as string;
+          attendees.set(id, [...(attendees.get(id) ?? []), row.user_id as string]);
+        }
       }
     }
   } catch {
@@ -45,7 +48,13 @@ export default async function ClassMeetups({ spaceId, subspaceId }: { spaceId: s
             <time dateTime={meetup.starts_at}>{meetupTime(meetup.starts_at)}</time>
             <p className={styles.location}>{meetup.location_name}</p>
             {meetup.blurb && <p className={styles.blurb}>{meetup.blurb}</p>}
-            <ClassRsvp spaceId={spaceId} subspaceId={subspaceId} meetupId={meetup.id} joined={joinedIds.has(meetup.id)} hosting={meetup.creator_id === user.id} />
+            <p className={styles.attendance} aria-label={`${attendees.get(meetup.id)?.length ?? 0} attendees`}>
+              {attendees.get(meetup.id)?.length ?? 0} going
+            </p>
+            {meetup.cancelled_at ? <p className={styles.cancelled} role="status">Cancelled by the organizer</p>
+              : meetup.creator_id === user.id
+                ? <OrganizerControls spaceId={spaceId} subspaceId={subspaceId} meetup={meetup} />
+                : <ClassRsvp spaceId={spaceId} subspaceId={subspaceId} meetupId={meetup.id} joined={attendees.get(meetup.id)?.includes(user.id) ?? false} hosting={false} />}
           </article>
         </li>)}</ul>}
     </>}

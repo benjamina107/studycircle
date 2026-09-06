@@ -41,9 +41,10 @@ export async function classMeetupRsvp(spaceId: string, subspaceId: string, meetu
   try {
     const db = await createClient();
     if (!await canAccessClass(db, spaceId, subspaceId)) return unavailable;
-    const { data, error } = await db.from("meetups").select("id,creator_id,starts_at")
+    const { data, error } = await db.from("meetups").select("id,creator_id,starts_at,cancelled_at")
       .eq("id", meetupId).eq("subspace_id", subspaceId).maybeSingle();
     if (error || !data) return { ok: false, message: "This meetup is no longer available in this class." };
+    if (data.cancelled_at) return { ok: false, message: "This meetup was cancelled." };
     if (data.creator_id === user.id) return { ok: false, message: "You’re hosting this meetup." };
     if (!(Date.parse(data.starts_at) > Date.now())) return { ok: false, message: "This meetup has started. RSVPs are closed." };
     const response = intent === "join"
@@ -57,4 +58,45 @@ export async function classMeetupRsvp(spaceId: string, subspaceId: string, meetu
   }
   revalidatePath("/spaces", "layout");
   return { ok: true, message: intent === "join" ? "You’re going." : "Your RSVP was cancelled." };
+}
+
+export async function updateClassMeetup(spaceId: string, subspaceId: string, meetupId: string, _previous: Result, form: FormData): Promise<Result> {
+  const user = await requireUser();
+  if (!recordId(meetupId)) return { ok: false, message: "Choose a valid meetup." };
+  const validated = validateCreation(form, Date.now());
+  if (!validated.ok) return { ok: false, message: "Check the highlighted fields.", errors: validated.errors };
+  try {
+    const db = await createClient();
+    if (!await canAccessClass(db, spaceId, subspaceId)) return unavailable;
+    const { data, error } = await db.from("meetups").select("id,creator_id,cancelled_at,starts_at")
+      .eq("id", meetupId).eq("subspace_id", subspaceId).maybeSingle();
+    if (error || !data || data.creator_id !== user.id) return { ok: false, message: "Only the organizer can edit this meetup." };
+    if (data.cancelled_at) return { ok: false, message: "Cancelled meetups can’t be edited." };
+    if (!(Date.parse(data.starts_at) > Date.now())) return { ok: false, message: "Meetups that have started can’t be edited." };
+    const response = await db.from("meetups").update(validated.value).eq("id", meetupId).eq("creator_id", user.id);
+    if (response.error) return { ok: false, message: "We couldn’t update this meetup. Please try again later." };
+  } catch {
+    return { ok: false, message: "We couldn’t update this meetup. Please try again later." };
+  }
+  revalidatePath("/spaces", "layout");
+  return { ok: true, message: "Meetup details updated." };
+}
+
+export async function cancelClassMeetup(spaceId: string, subspaceId: string, meetupId: string, _previous: Result, _form: FormData): Promise<Result> {
+  const user = await requireUser();
+  if (!recordId(meetupId)) return { ok: false, message: "Choose a valid meetup." };
+  try {
+    const db = await createClient();
+    if (!await canAccessClass(db, spaceId, subspaceId)) return unavailable;
+    const { data, error } = await db.from("meetups").select("id,creator_id,cancelled_at")
+      .eq("id", meetupId).eq("subspace_id", subspaceId).maybeSingle();
+    if (error || !data || data.creator_id !== user.id) return { ok: false, message: "Only the organizer can cancel this meetup." };
+    if (data.cancelled_at) return { ok: true, message: "This meetup is already cancelled." };
+    const response = await db.from("meetups").update({ cancelled_at: new Date().toISOString() }).eq("id", meetupId).eq("creator_id", user.id).is("cancelled_at", null);
+    if (response.error) return { ok: false, message: "We couldn’t cancel this meetup. Please try again later." };
+  } catch {
+    return { ok: false, message: "We couldn’t cancel this meetup. Please try again later." };
+  }
+  revalidatePath("/spaces", "layout");
+  return { ok: true, message: "Meetup cancelled. Attendees can see that it is no longer happening." };
 }

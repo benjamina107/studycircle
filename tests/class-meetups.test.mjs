@@ -49,7 +49,7 @@ test("class meetup actions authenticate and enforce selected class membership", 
   function query(table) {
     calls.push(["from", table]);
     const chain = {};
-    for (const method of ["select", "eq", "maybeSingle", "insert", "delete"]) {
+    for (const method of ["select", "eq", "maybeSingle", "insert", "delete", "update", "is"]) {
       chain[method] = (...args) => { calls.push([method, ...args]); return chain; };
     }
     chain.then = (resolve, reject) => {
@@ -73,7 +73,7 @@ test("class meetup actions authenticate and enforce selected class membership", 
   const noWrites = () => assert.ok(!calls.some(([name]) => name === "insert" || name === "delete"));
   function reset(queue = []) { calls = []; results = queue; refreshes = 0; }
   try {
-    const { createClassMeetup, classMeetupRsvp } = load("../src/features/class-meetups/actions.ts");
+    const { cancelClassMeetup, createClassMeetup, classMeetupRsvp, updateClassMeetup } = load("../src/features/class-meetups/actions.ts");
     await t.test("authentication redirects propagate and prevent all database work", async () => {
       reset(); authError = new Error("NEXT_REDIRECT");
       await assert.rejects(createClassMeetup("space", "class", previous, form()), /NEXT_REDIRECT/);
@@ -138,6 +138,20 @@ test("class meetup actions authenticate and enforce selected class membership", 
       reset([...allowed(), { data: meetup }, { error: { code: "42501", message: "secret" } }]);
       const result = await classMeetupRsvp("space", "class", "meetup", previous, form({ intent: "join" }));
       assert.equal(result.ok, false); assert.ok(!result.message.includes("secret")); assert.equal(refreshes, 0);
+    });
+    await t.test("only the organizer can edit or cancel, and cancellation is idempotent", async () => {
+      reset([...allowed(), { data: meetup, error: null }, { error: null }]);
+      assert.equal((await updateClassMeetup("space", "class", "meetup", previous, form())).ok, false);
+      assert.ok(!calls.some(([name]) => name === "update"));
+      reset([...allowed(), { data: { ...meetup, creator_id: "verified-user", cancelled_at: null }, error: null }, { error: null }]);
+      assert.equal((await updateClassMeetup("space", "class", "meetup", previous, form())).ok, true);
+      assert.equal(calls.find(([name]) => name === "update")[1].location_name, "Library");
+      reset([...allowed(), { data: { ...meetup, creator_id: "verified-user", cancelled_at: null }, error: null }, { error: null }]);
+      assert.equal((await cancelClassMeetup("space", "class", "meetup", previous, form())).ok, true);
+      assert.ok(calls.find(([name]) => name === "update")[1].cancelled_at);
+      reset([...allowed(), { data: { ...meetup, creator_id: "verified-user", cancelled_at: "2099-01-01T00:00:00Z" }, error: null }]);
+      assert.equal((await cancelClassMeetup("space", "class", "meetup", previous, form())).ok, true);
+      assert.ok(!calls.some(([name]) => name === "update"));
     });
   } finally {
     Module._load = originalLoad;
