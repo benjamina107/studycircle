@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import ClassHeader from "./ClassHeader";
 import type { ClassOption, ClassTab } from "@/lib/class-navigation";
+import { useFillViewport } from "@/lib/use-fill-viewport";
 import { MEETUP_LIMITS, resolveCampusTime } from "@/lib/meetups-validation";
 import { meetupTime } from "@/lib/feed";
 import meetupStyles from "@/features/class-meetups/class-meetups.module.css";
@@ -33,7 +34,7 @@ export default function WorkspacePreview({ initialTab = "meetups", initialGroup 
   const [groups, setGroups] = useState(previewCatalog.slice(0, 2));
   const [leaveId, setLeaveId] = useState<string | null>(null);
   return <div className={`workspace ${styles.preview}`}>
-    <ClassHeader groups={groups} preview={{ groupId, tab, profile }} previewCatalog={previewCatalog} onPreviewProfile={() => setProfile(true)} onPreviewAdd={group => { setGroups(current => current.some(item => item.id === group.id) ? current : [...current, group]); setGroupId(group.id); setProfile(false); }} onPreviewChange={(group, nextTab) => { setGroupId(group); setTab(nextTab); setProfile(false); }} />
+    <ClassHeader groups={groups} preview={{ groupId, tab, profile }} onPreviewProfile={() => setProfile(true)} onPreviewChange={(group, nextTab) => { setGroupId(group); setTab(nextTab); setProfile(false); }} />
     <div className={styles.notice}>Layout preview · sample data</div>
     <main id="workspace-main" tabIndex={-1} className="group-content">
       {profile && <section className={styles.profile} aria-label="Sample profile">
@@ -109,17 +110,42 @@ function PreviewMeetupForm({ onCreate, onCancel }: { onCreate: (meetup: SampleMe
 
 function PreviewChat({ group, initialChannel }: { group: ClassOption; initialChannel: Channel }) {
   const [channel, setChannel] = useState<Channel>(initialChannel);
+  const [switcherOpen, setSwitcherOpen] = useState(false);
+  const switcherRef = useRef<HTMLDivElement>(null);
   const [messages, setMessages] = useState<Record<Channel, SampleMessage[]>>({
     general: [{ id: "hello", author: "Maya", text: `Anyone in ${group.professor}’s class want to compare notes after lecture?` }, { id: "reply", author: "Alex", text: "Yes! I put my notes here if they help.", attachment: resources[group.id][0] }],
     homework: [{ id: "question", author: "Sam", text: group.id === "math" ? "How did you check whether those vectors are independent?" : "Can someone explain how to trace the recursive calls?" }, { id: "answer", author: "Maya", text: "I wrote out each step. Here’s the practice sheet.", attachment: resources[group.id][1] }],
   });
   const list = useRef<HTMLOListElement>(null);
+  const { sectionRef, height } = useFillViewport<HTMLElement>();
   useEffect(() => { if (list.current) list.current.scrollTop = list.current.scrollHeight; }, [messages, channel]);
-  return <section className={chatStyles.chat} aria-label={`${group.code} class chat`}>
-    <header className={chatStyles.header}><div><h1>Chat</h1><p>General discussion and homework questions.</p></div><nav className={chatStyles.channels} aria-label="Chat channels">{(["general", "homework"] as const).map(name => <button key={name} aria-pressed={name === channel} onClick={() => setChannel(name)}>{name === "general" ? "General" : "Homework"}</button>)}</nav></header>
-    <ol ref={list} className={chatStyles.messages} aria-label={`${channel} messages`}>{messages[channel].map(message => <li key={message.id} className={chatStyles.message}>
-      <span className={chatStyles.avatar} aria-hidden="true">{message.author.slice(0, 1)}</span><div className={chatStyles.messageContent}><div className={chatStyles.byline}><strong>{message.author}</strong></div><p>{message.text}</p>{message.attachment && <div className={chatStyles.attachment}>{message.attachment}<span>Sample attachment</span></div>}</div>
-    </li>)}</ol>
+  useEffect(() => {
+    if (!switcherOpen) return;
+    function onClick(event: MouseEvent) { if (switcherRef.current && !switcherRef.current.contains(event.target as Node)) setSwitcherOpen(false); }
+    document.addEventListener("click", onClick);
+    return () => document.removeEventListener("click", onClick);
+  }, [switcherOpen]);
+  return <section ref={sectionRef} style={height ? { height } : undefined} className={chatStyles.chat} aria-label={`${group.code} class chat`}>
+    <header className={chatStyles.header}>
+      <div className={chatStyles.switcher} ref={switcherRef}>
+        <button type="button" className={chatStyles.switcherButton} aria-haspopup="menu" aria-expanded={switcherOpen} onClick={() => setSwitcherOpen(value => !value)}>
+          <span className={chatStyles.hash} aria-hidden="true">#</span>{channel === "general" ? "General" : "Homework"}
+          <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m6 9 6 6 6-6" /></svg>
+        </button>
+        {switcherOpen && <ul className={chatStyles.switcherMenu} role="menu" aria-label="Choose a channel">{(["general", "homework"] as const).map(name => <li key={name} role="none">
+          <button type="button" role="menuitem" aria-current={name === channel ? "true" : undefined} onClick={() => { setChannel(name); setSwitcherOpen(false); }}><span className={chatStyles.hash} aria-hidden="true">#</span>{name === "general" ? "General" : "Homework"}</button>
+        </li>)}</ul>}
+      </div>
+    </header>
+    <ol ref={list} className={chatStyles.messages} aria-label={`${channel} messages`}>{messages[channel].map(message => {
+      const own = message.author === "You";
+      return <li key={message.id} className={`${chatStyles.message} ${own ? chatStyles.own : chatStyles.other}`}>
+        <div className={chatStyles.bubbleGroup}>
+          {!own && <span className={chatStyles.author}>{message.author}</span>}
+          <div className={chatStyles.bubble}><p>{message.text}</p>{message.attachment && <div className={chatStyles.attachment}>{message.attachment}<span>Sample attachment</span></div>}</div>
+        </div>
+      </li>;
+    })}</ol>
     <PreviewComposer key={channel} channel={channel} resources={resources[group.id]} onSend={message => setMessages(current => ({ ...current, [channel]: [...current[channel], message] }))} />
   </section>;
 }
@@ -128,17 +154,39 @@ function PreviewComposer({ channel, resources: files, onSend }: { channel: Chann
   const [body, setBody] = useState("");
   const [attachment, setAttachment] = useState("");
   const [picker, setPicker] = useState(false);
+  const [attachOpen, setAttachOpen] = useState(false);
   const [notice, setNotice] = useState("");
+  const attachRef = useRef<HTMLDivElement>(null);
   const id = useId();
+  useEffect(() => {
+    if (!attachOpen) return;
+    function onClick(event: MouseEvent) { if (attachRef.current && !attachRef.current.contains(event.target as Node)) setAttachOpen(false); }
+    document.addEventListener("click", onClick);
+    return () => document.removeEventListener("click", onClick);
+  }, [attachOpen]);
   return <form className={chatStyles.composer} onSubmit={event => {
     event.preventDefault(); if (!body.trim() && !attachment) return;
     onSend({ id: crypto.randomUUID(), author: "You", text: body.trim(), attachment: attachment || undefined });
     setBody(""); setAttachment(""); setPicker(false); setNotice("Message added to this preview.");
   }}>
-    <label htmlFor={id}>Message {channel === "general" ? "General" : "Homework"}</label><textarea id={id} value={body} maxLength={4000} onChange={event => setBody(event.target.value)} placeholder="Write a message…" />
-    <div className={chatStyles.actions}><button type="button" aria-expanded={picker} aria-controls={`${id}-files`} onClick={() => setPicker(!picker)}>Attach class file</button><button type="button" disabled title="Uploads are unavailable in this preview">Upload file</button><button className={chatStyles.send} disabled={!body.trim() && !attachment}>Send</button></div>
-    <div id={`${id}-files`}>{picker && <div className={chatStyles.picker}><p>Choose a sample attachment</p><ul>{files.map(file => <li key={file}><button type="button" onClick={() => { setAttachment(file); setPicker(false); }}>{file}</button></li>)}</ul></div>}</div>
-    {attachment && <div className={chatStyles.selected}><span>{attachment} · sample attachment</span><button type="button" onClick={() => setAttachment("")}>Remove</button></div>}
+    {picker && <div className={chatStyles.picker}><div className={chatStyles.pickerTitle}><strong>Choose a sample attachment</strong><button type="button" onClick={() => setPicker(false)}>Close</button></div><ul>{files.map(file => <li key={file}><button type="button" onClick={() => { setAttachment(file); setPicker(false); }}>{file}</button></li>)}</ul></div>}
+    {attachment && <div className={chatStyles.selected}><span className={chatStyles.attachName}>{attachment} · sample attachment</span><button type="button" className={chatStyles.removeAttachment} aria-label="Remove attachment" onClick={() => setAttachment("")}>×</button></div>}
+    <div className={chatStyles.composerRow}>
+      <div className={chatStyles.attachWrap} ref={attachRef}>
+        <button type="button" className={chatStyles.plusButton} aria-haspopup="menu" aria-expanded={attachOpen} aria-label="Attach a file" onClick={() => setAttachOpen(value => !value)}>
+          <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg>
+        </button>
+        {attachOpen && <div className={chatStyles.attachMenu} role="menu">
+          <button type="button" role="menuitem" disabled title="Uploads are unavailable in this preview">Upload a file</button>
+          <button type="button" role="menuitem" onClick={() => { setAttachOpen(false); setPicker(true); }}>Choose from Files</button>
+        </div>}
+      </div>
+      <label htmlFor={id} className={chatStyles.srOnly}>Message {channel === "general" ? "General" : "Homework"}</label>
+      <textarea id={id} value={body} maxLength={4000} rows={1} onChange={event => setBody(event.target.value)} placeholder={`Message #${channel}`} />
+      <button className={chatStyles.sendButton} aria-label="Send message" disabled={!body.trim() && !attachment}>
+        <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m22 2-7 20-4-9-9-4Z" /><path d="M22 2 11 13" /></svg>
+      </button>
+    </div>
     <p className={chatStyles.hint}>Messages stay in this preview. Uploads and downloads are unavailable.</p><p role="status" className={chatStyles.hint}>{notice}</p>
   </form>;
 }
