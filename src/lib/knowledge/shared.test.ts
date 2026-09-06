@@ -29,3 +29,12 @@ test('retrieval keeps contradictions even when the surrounding text overlaps',()
  const rows=['Insertion is O(1).','Insertion is not O(1).','Insertion is O(n).'].map((text,i)=>({id:String(i),asset_id:String(i),score:1,locator:'p1',content:base+text}));
  assert.equal(diversePassages(rows).length,3);
 });
+
+test('Circle AI mentions support spaces and preserve legacy names',()=>{
+ assert.equal(hasMention('@Circle AI revise card five'),true);
+ assert.equal(hasMention('hello @circleai'),true);
+ assert.equal(hasMention('@AI help'),true);
+ assert.equal(hasMention('@ClassAI help'),true);
+ assert.equal(hasMention('@Circle AIextra'),false);
+ assert.equal(hasMention('email@Circle AI'),false);
+});

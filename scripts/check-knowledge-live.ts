@@ -58,6 +58,15 @@ try {
  const revised=checked(await db.from('study_messages').select('payload').eq('reply_to',followupId).single());
  assert.deepEqual(revised?.payload.cards,[...answer.payload.cards].reverse());
  console.log('PASS: follow-up retrieves cards beyond six messages and returns the exact revised set.');
+ for(const body of ['@Circle AI hi','@Circle AI explain the first card in plain language without changing the set']) {
+  const checkId=randomUUID();
+  const postedCheck=await fetch(origin+`/api/study/messages?class=${id}`,{method:'POST',headers:{...headers,'Content-Type':'application/json'},body:JSON.stringify({id:checkId,channel:'general',body})});assert.equal(postedCheck.status,201);
+  await workerTick();
+  const reply=checked(await db.from('study_messages').select('body,payload').eq('reply_to',checkId).single());
+  assert.ok(reply?.body.trim());assert.equal(reply?.payload.cards.length,0);
+  if(body.endsWith(' hi'))assert.equal(reply?.payload.sources.length,0);
+ }
+ console.log('PASS: greeting and explanation after card edits produce prose, not unsolicited cards.');
  if(process.argv.includes('--hold-ui')) {
   await writeFile('/tmp/studycircle-ui-fixture.json',JSON.stringify({email:id+'@calpoly.edu',password,classUrl:origin+'/spaces/'+id+'/'+id+'/chat',release:'/tmp/studycircle-ui-release'}),{mode:0o600});
   console.log('UI fixture ready. Waiting up to 10 minutes for /tmp/studycircle-ui-release.');

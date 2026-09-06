@@ -39,5 +39,5 @@ export function diversePassages(rows: SearchPassage[], limit = 18): SearchPassag
   while(output.length<limit && [...groups.values()].some(g=>g.length)) for(const group of groups.values()) { const row=group.shift(); if(row && output.length<limit) output.push(row); }
   return output;
 }
-export const hasMention = (text: string) => /(^|\s)@(?:ai|classai)\b/i.test(text);
+export const hasMention = (text: string) => /(^|\s)@(?:circle[ \t]+ai|circleai|ai|classai)\b/i.test(text);
 export const isChannel = (value: unknown): value is 'general'|'homework'|'meetups' => ['general','homework','meetups'].includes(String(value));
