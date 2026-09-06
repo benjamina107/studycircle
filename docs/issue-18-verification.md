@@ -33,7 +33,7 @@ confirmation button, and expired sessions redirected without context.
 
 ## Verification
 
-- `npm test`: 55 passing tests, including request duplicate/timeout/error cases.
+- `npm test`: 56 passing tests after the final main sync, including request duplicate/timeout/error cases.
 - `node node_modules/tsx/dist/cli.mjs --test src/app/api/auth/*.test.ts`:
   17 passing tests, exercising real handlers with controlled service results for
   signup/login/logout, callback, valid/expired/unsupported tokens, private errors,
@@ -60,3 +60,6 @@ The earlier Resend delivery test is documented separately.
 Changes are confined to the existing account flow, its tests and documentation.
 Main was synchronized before implementation. A merge check is a snapshot of the
 currently published branches, not a guarantee against future overlapping edits.
+The final independent review at `2b9caa4` verified clean simulated merges with
+all fetched remote branches, including main `19c2f72`, and confirmed that the
+final main merge preserved every issue #18 code change.
