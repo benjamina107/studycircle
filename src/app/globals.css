@@ -12,11 +12,24 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root { color-scheme: light; }
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --background: #131c18;
+  --foreground: #e3ebe4;
+}
+
+/* Shared dark palette. Individual rules retain their original light colors. */
+:root {
+  --night-surface: #1c2821;
+  --night-raised: #25352b;
+  --night-selected: #334a39;
+  --night-text: #e3ebe4;
+  --night-muted: #adbdac;
+  --night-border: #425446;
+  --night-accent: #afd29e;
+  --night-danger: #f1aaa0;
+  --night-warning: #e0c384;
 }
 
 body {
