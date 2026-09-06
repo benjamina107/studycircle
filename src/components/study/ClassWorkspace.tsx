@@ -1,5 +1,4 @@
 'use client';
-import Link from 'next/link';
 import { useCallback,useEffect,useRef,useState,type FormEvent,type ReactNode } from 'react';
 import FeedRsvp from '@/components/FeedRsvp';
 import type { ChatInvite } from '@/components/chat/ChatDemo';
@@ -7,6 +6,7 @@ import { ACCEPT_FILES,MAX_FILE_BYTES,quizletText,hasMention,type AnswerPayload }
 import type { ChatChannelId } from '@/lib/chat-demo';
 import styles from '@/components/chat/ChatDemo.module.css';
 import ui from './Study.module.css';
+import layout from '@/features/class-chat/ClassChat.module.css';
 type Message={id:string;author_id:string|null;role:'user'|'assistant';body:string;payload:AnswerPayload|null;ai_status:string;error:string|null;created_at:string};
 type Upload={id:string;file_name:string;description:string;uploader_id:string;byte_size:number;created_at:string;kb_assets:{status:string;error:string|null}};
 async function api<T>(url:string,options?:RequestInit):Promise<T> {
@@ -47,7 +47,7 @@ function Cards({payload}:{payload:AnswerPayload}) {
   {status&&<p role="status" className={styles.small}>{status}</p>}
  </div>;
 }
-function Notes({subspace,userId}:{subspace:string;userId:string}) {
+export function Notes({subspace,userId}:{subspace:string;userId:string}) {
  const {data,error,refresh}=usePoll<{files:Upload[]}>(`/api/study/uploads?class=${encodeURIComponent(subspace)}`);
  const [files,setFiles]=useState<File[]>([]);const [description,setDescription]=useState('');const [pending,setPending]=useState(false);const [message,setMessage]=useState('');const [failed,setFailed]=useState(false);const [confirm,setConfirm]=useState<string|null>(null);
  const input=useRef<HTMLInputElement>(null);
@@ -135,12 +135,11 @@ function Conversation({subspace,channel,userId,invites}:{subspace:string;channel
  </>;
 }
 export default function ClassWorkspace({subspace,userId,classLabel,initialChannel='general',invites=[]}:{subspace:string;userId:string;classLabel:string;initialChannel?:ChatChannelId;invites?:ChatInvite[]}) {
- const [channel,setChannel]=useState<ChatChannelId>(initialChannel);const [notes,setNotes]=useState(false);
- return <section className={styles.demo}><div className={styles.shell}>
-  <aside className={styles.sidebar}><Link className={styles.link} href="/chats">← Choose class</Link><p className={styles.course}>{classLabel}</p>
-   <nav className={styles.channels} aria-label="Class channels">{(['general','homework','meetups'] as const).map(c=><button key={c} className={styles.channel} aria-pressed={!notes&&channel===c} onClick={()=>{setChannel(c);setNotes(false);}}># {c[0].toUpperCase()+c.slice(1)}</button>)}</nav>
-   <button className={styles.mediaFolder} aria-pressed={notes} onClick={()=>setNotes(true)}>▱ Shared notes</button>
-  </aside><div className={styles.conversation}><header className={styles.channelHeader}><h2>{notes?'Shared notes':channel[0].toUpperCase()+channel.slice(1)}</h2><p className={styles.muted}>{notes?'Every contribution helps your class study.':'Your class conversation, with ClassAI when you need it.'}</p></header>
-   {notes?<Notes subspace={subspace} userId={userId}/>:<Conversation key={channel} subspace={subspace} channel={channel} userId={userId} invites={invites}/>}
-  </div></div></section>;
+ const [channel,setChannel]=useState<ChatChannelId>(initialChannel);
+ return <section className={layout.chat} aria-label={classLabel+' chat'}>
+  <header className={layout.header}><div><h1>Chat</h1><p>Your class conversation, with ClassAI when you need it.</p></div>
+   <nav className={layout.channels} aria-label="Chat channels">{(['general','homework','meetups'] as const).map(c=><button key={c} type="button" aria-pressed={channel===c} onClick={()=>setChannel(c)}>{c[0].toUpperCase()+c.slice(1)}</button>)}</nav>
+  </header>
+  <Conversation key={channel} subspace={subspace} channel={channel} userId={userId} invites={invites}/>
+ </section>;
 }

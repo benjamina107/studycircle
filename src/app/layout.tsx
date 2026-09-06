@@ -14,8 +14,10 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "StudyCircle",
+  applicationName: "StudyCircle",
+  // Icon links are generated from icon.png, apple-icon.png, and favicon.ico.
   description:
-    "Every Cal Poly class is a Space — group chat, in-person meetups, shared lecture notes, and an AI that knows what your professor taught.",
+    "Meetups, class chat, and shared files for your Cal Poly courses and professors.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

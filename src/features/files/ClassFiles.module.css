@@ -1,0 +1,25 @@
+.panel { color: #253d33; background: #fffefa; border: 1px solid #dfe2d6; border-radius: 12px; padding: clamp(18px, 4vw, 32px); }
+.heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 24px; }
+.heading h1 { font-size: 24px; line-height: 1.25; margin: 0 0 8px; }
+.panel p { color: #697365; font-size: 14px; line-height: 1.6; margin: 6px 0; }
+.upload { padding: 20px; background: #eff2e9; border: 1px solid #dfe2d6; border-radius: 12px; }
+.upload label { font-weight: 650; }
+.controls { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-top: 14px; }
+.controls input { min-width: 0; max-width: 100%; font: inherit; font-size: 14px; }
+.controls input::file-selector-button { border: 1px solid #dfe2d6; border-radius: 8px; padding: 9px 12px; background: #fffefa; color: #253d33; cursor: pointer; margin-right: 12px; }
+.panel button { background: #304b3b; color: #fffefa; border: 1px solid transparent; padding: 10px 16px; border-radius: 10px; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+.panel button.secondary { background: transparent; border-color: #dfe2d6; color: #253d33; }
+.panel button:disabled { opacity: .5; cursor: not-allowed; }
+.panel :is(button, a, input):focus-visible { outline: 3px solid #697365; outline-offset: 3px; }
+.panel p.error { color: #9b3428; }
+.empty { text-align: center; padding: 38px 12px; color: #697365; }
+.empty h3 { font-size: 17px; color: #253d33; margin: 0 0 8px; }
+.list { list-style: none; padding: 0; margin: 18px 0 0; }
+.list li { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 18px 0; border-bottom: 1px solid #dfe2d6; }
+.list li:last-child { border-bottom: 0; padding-bottom: 0; }
+.file { min-width: 0; display: grid; gap: 5px; }
+.name { font-weight: 600; overflow-wrap: anywhere; }
+.meta { font-size: 12px; color: #697365; }
+.download { color: #304b3b; font-size: 14px; font-weight: 600; white-space: nowrap; text-underline-offset: 4px; }
+.pagination { margin-top: 24px; text-align: center; }
+@media (max-width: 480px) { .list li { align-items: flex-start; flex-direction: column; gap: 10px; } .controls { align-items: stretch; flex-direction: column; } }

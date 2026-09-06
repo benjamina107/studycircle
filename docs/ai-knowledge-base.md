@@ -72,3 +72,7 @@ npm run build
 - [Structured output](https://developers.openai.com/api/docs/guides/structured-outputs)
 - [Supabase pgvector](https://supabase.com/docs/guides/database/extensions/pgvector)
 - [Quizlet import format](https://help.quizlet.com/hc/en-us/articles/360029977151-Creating-sets-by-importing-content)
+
+## Main UI merge
+
+The class header and navigation use the current main UI. The live Chat route retains the study_messages/AI pipeline, and Files uses kb_uploads so every new contribution is indexed. The separate upstream ClassChat/ClassFiles components and APIs are retained but are not the active workspace views. Incoming migrations were renumbered 008–011 because 005–007 already hold applied knowledge migrations; do not rewrite applied migration history.
