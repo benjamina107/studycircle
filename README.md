@@ -52,3 +52,7 @@ Offline checks: `npm run test:auth`, `npm run test:catalog`, and
 `npm run catalog:validate -- docs/catalog-demo.json`. See
 [meetup preview](docs/meetups-preview.md), [chat preview](docs/chat-preview.md),
 and [catalog format](docs/catalog-format.md).
+
+## Shared notes and ClassAI
+
+Authenticated class chat now saves messages and supports `@AI` / `@ClassAI`. Use Shared notes to upload audio, images, PDF, DOCX, or text with optional context. Start `npm run worker` alongside `npm run dev` for extraction and AI responses. Quizlet cards are generated on request and copied as tab-separated question/answer text. See [AI setup, limits, and verification](docs/ai-knowledge-base.md). Public preview routes still use fictional data.

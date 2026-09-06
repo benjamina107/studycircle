@@ -46,3 +46,6 @@ next-env.d.ts
 dev.db
 *.db-journal
 /src/generated/
+
+# Supabase local link metadata
+supabase/.temp/

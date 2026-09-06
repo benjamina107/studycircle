@@ -18,7 +18,7 @@ for (const hardening of [false, true]) test(`chat file SQL isolates classes, ver
       create table storage.objects(id uuid primary key default gen_random_uuid(),bucket_id text references storage.buckets(id),name text,owner_id text,metadata jsonb,unique(bucket_id,name));
       alter table storage.objects enable row level security; alter table storage.buckets enable row level security;
       grant all on storage.objects,storage.buckets to anon,authenticated;`);
-    for (const file of ['202609050001_initial.sql', '202609050002_domain.sql', '202609050003_meetups.sql', '202609050006_class_files.sql']) await db.exec(await readFile(new URL(`../supabase/migrations/${file}`, import.meta.url), 'utf8'));
+    for (const file of ['202609050001_initial.sql', '202609050002_domain.sql', '202609050003_meetups.sql', '202609050012_repair_meetup_integrity.sql', '202609050010_class_files.sql']) await db.exec(await readFile(new URL(`../supabase/migrations/${file}`, import.meta.url), 'utf8'));
     await db.exec(`insert into auth.users(id,email,email_confirmed_at) values ('${a}','a@calpoly.edu',now()),('${b}','b@calpoly.edu',now());
       insert into courses(id,code,title,term) values ('c1','CSC202','CS','Fall'); insert into professors(id,name) values ('p1','One'),('p2','Two');
       insert into sections(id,course_id,professor_id,section_code,days) values ('s1','c1','p1','01','MWF'),('s2','c1','p2','02','MWF');
@@ -30,7 +30,7 @@ for (const hardening of [false, true]) test(`chat file SQL isolates classes, ver
         ('${f1}','sub1','Homework.pdf',100,'application/pdf','${a}','sub1/${a}/${f1}.pdf'),
         ('${f2}','sub2','Private.pdf',100,'application/pdf','${b}','sub2/${b}/${f2}.pdf');
       insert into messages(id,channel_id,author_id,body) values ('legacy-message','legacy','${a}','keep me');`);
-    await db.exec(await readFile(new URL('../supabase/migrations/202609050007_chat_files.sql', import.meta.url), 'utf8'));
+    await db.exec(await readFile(new URL('../supabase/migrations/202609050011_chat_files.sql', import.meta.url), 'utf8'));
     if (hardening) await db.exec(await readFile(new URL('../src/features/chat/pending-chat-hardening.sql', import.meta.url), 'utf8'));
     assert.equal((await db.query("select count(*)::int as n from channels where name in ('general','homework')")).rows[0].n, 4);
     assert.equal((await db.query("select id from channels where subspace_id='sub1' and name='general'")).rows[0].id, 'ch1');

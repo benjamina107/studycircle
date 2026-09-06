@@ -16,7 +16,7 @@ All routes use the server-only cookie-scoped Supabase client and `auth.getUser()
 
 ## Storage and validation
 
-Migration `202609050006_class_files.sql` creates private bucket `class-files` and metadata table `public.class_files`. It sets `public=false` even if a bucket with that ID already exists. End-user bucket mutation guards prevent making it public. The bucket has a 10 MiB limit and a MIME allowlist for PDF, PNG, JPEG, TXT, and CSV.
+Migration `202609050010_class_files.sql` creates private bucket `class-files` and metadata table `public.class_files`. It sets `public=false` even if a bucket with that ID already exists. End-user bucket mutation guards prevent making it public. The bucket has a 10 MiB limit and a MIME allowlist for PDF, PNG, JPEG, TXT, and CSV.
 
 Uploads enforce nonempty files, 180-character filenames, no separators/control/bidi characters, permitted extensions, matching declared MIME (or empty/octet-stream declarations), and byte signatures for PDF/PNG/JPEG or valid UTF-8 text without binary control bytes. These checks identify obvious mismatches, not malware or full document validity. Original filenames are display/download labels only. Object keys are generated as `<subspaceId>/<authenticated-user-uuid>/<random-v4-file-uuid>.<extension>`, never supplied by the caller. Subspace IDs must be 1–128 ASCII letters, digits, underscores, or hyphens.
 
@@ -46,7 +46,7 @@ Owned changes only:
 
 - `src/features/files/`: `ClassFiles.tsx`, `ClassFiles.module.css`, `types.ts`, `validation.ts`, `server.ts`, `upload.ts`, `client.ts`.
 - `src/app/api/class-files/route.ts` and `src/app/api/class-files/[id]/download/route.ts`.
-- `supabase/migrations/202609050006_class_files.sql`.
+- `supabase/migrations/202609050010_class_files.sql`.
 - `tests/class-files-api.test.mjs`, `tests/class-files-policy.test.mjs`, `tests/class-files-upload.test.mjs`, `tests/class-files-validation.test.mjs`, `tests/class-files-client.test.mjs`.
 - `docs/class-files.md`.
 

@@ -32,7 +32,7 @@ test('class files isolate course AND professor, constrain metadata, and protect 
       create policy broad_objects on storage.objects for all to anon,authenticated using (true) with check (true);
       create policy broad_buckets on storage.buckets for all to anon,authenticated using (true) with check (true);
       insert into storage.buckets values ('class-files','class-files',true,null,null);`);
-    for (const file of ['202609050001_initial.sql', '202609050002_domain.sql', '202609050003_meetups.sql', '202609050006_class_files.sql', '202609050007_chat_files.sql']) {
+    for (const file of ['202609050001_initial.sql', '202609050002_domain.sql', '202609050012_repair_meetup_integrity.sql', '202609050012_repair_meetup_integrity.sql', '202609050010_class_files.sql', '202609050011_chat_files.sql']) {
       await db.exec(await readFile(new URL(`../supabase/migrations/${file}`, import.meta.url), 'utf8'));
     }
     const bucket = (await db.query("select * from storage.buckets where id='class-files'")).rows[0];
