@@ -4,7 +4,7 @@ import AIMessage from './AIMessage';
 import FeedRsvp from '@/components/FeedRsvp';
 import type { ChatInvite } from '@/components/chat/ChatDemo';
 import { ACCEPT_FILES,MAX_FILE_BYTES,quizletText,type AnswerPayload } from '@/lib/knowledge/shared';
-import {CLASS_CHANNELS,channelLabel,type StudyChannel} from '@/lib/knowledge/channels';
+import type { StudyChannel } from '@/lib/knowledge/channels';
 import styles from '@/components/chat/ChatDemo.module.css';
 import ui from './Study.module.css';
 import { useFillViewport } from '@/lib/use-fill-viewport';
@@ -212,22 +212,9 @@ function Conversation({subspace,channel,userId,invites}:{subspace:string;channel
 export function PrivateAIConversation({subspace,userId}:{subspace:string;userId:string}) {
  return <div className={ui.chatSurface} style={{flex:1,minHeight:0,height:'auto'}}><Conversation subspace={subspace} userId={userId} channel="ai" invites={[]}/></div>;
 }
-export default function ClassWorkspace({subspace,userId,classLabel,initialChannel='general',invites=[]}:{subspace:string;userId:string;classLabel:string;initialChannel?:StudyChannel;invites?:ChatInvite[]}) {
- const [channel,setChannel]=useState<StudyChannel>(initialChannel==='meetups'||initialChannel==='ai'?'general':initialChannel);
+export default function ClassWorkspace({subspace,userId,classLabel,invites=[]}:{subspace:string;userId:string;classLabel:string;invites?:ChatInvite[]}) {
  const {sectionRef,height}=useFillViewport<HTMLElement>();
- const channelMenu=useRef<HTMLDetailsElement>(null);
- useEffect(()=>{
-  const close=(event:PointerEvent)=>{if(channelMenu.current&&!channelMenu.current.contains(event.target as Node))channelMenu.current.open=false;};
-  document.addEventListener('pointerdown',close);return()=>document.removeEventListener('pointerdown',close);
- },[]);
  return <section ref={sectionRef} style={height===null?undefined:{height}} className={ui.chatSurface} aria-label={classLabel+' chat'}>
-  <header className={ui.chatToolbar}>
-   <details ref={channelMenu} className={ui.channelPicker} id="active-conversation" onKeyDown={event=>{if(event.key==='Escape'){event.preventDefault();if(channelMenu.current){channelMenu.current.open=false;channelMenu.current.querySelector('summary')?.focus();}}}}>
-    <summary aria-label={'Choose conversation. Current: '+channel}><span aria-hidden="true">#</span>{channelLabel(channel)}<svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="m6 9 6 6 6-6"/></svg></summary>
-    <nav className={ui.channelMenu} aria-label="Conversations"><span className={ui.channelMenuLabel}>CLASS CHANNELS</span>{CLASS_CHANNELS.map(({id:name,label,description})=><button key={name} type="button" aria-current={channel===name?'true':undefined} onClick={()=>{setChannel(name);if(channelMenu.current){channelMenu.current.open=false;channelMenu.current.querySelector('summary')?.focus();}}}><span aria-hidden="true">#</span><span><strong>{label}</strong><small>{description}</small></span>{channel===name&&<span className={ui.channelCheck} aria-hidden="true">✓</span>}</button>)}</nav>
-   </details>
-   <span className={ui.chatContext}>{channel==='ai'?'Private · Only you and Circle AI':'Class chat · @Circle AI available'}</span>
-  </header>
-  <Conversation key={channel} subspace={subspace} channel={channel} userId={userId} invites={invites}/>
+  <Conversation subspace={subspace} channel="general" userId={userId} invites={invites}/>
  </section>;
 }
