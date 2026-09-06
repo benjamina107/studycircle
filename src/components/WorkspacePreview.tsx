@@ -41,7 +41,7 @@ export default function WorkspacePreview({ initialTab = "meetups", initialGroup 
         <div className="workspace-panel profile-form"><div className="profile-identity"><span className="profile-avatar" aria-hidden="true">JS</span><div><strong>Jordan Santos</strong><p>Computer Science · Sample student</p></div></div>
           <p className="workspace-hint">Personal details are read-only here. Class changes reset when you reload.</p>
           <h2 className="workspace-section-title">Your classes</h2><ul className="enrollment-list">{groups.map(group => <li key={group.id}><div><strong>{group.code} · {group.title}</strong><p>{group.professor} · {group.term}</p></div>{leaveId === group.id ? <div className="class-leave-confirm"><p>Leave {group.code} with {group.professor}? You’ll lose access to its meetups, chat, and files.</p><button className="workspace-secondary" onClick={() => { const remaining = groups.filter(item => item.id !== group.id); setGroups(remaining); if (groupId === group.id) setGroupId(remaining[0]?.id || ""); setLeaveId(null); }}>Confirm leave</button><button className="workspace-secondary" onClick={() => setLeaveId(null)}>Cancel</button></div> : <button className="workspace-secondary" onClick={() => setLeaveId(group.id)} aria-label={`Leave ${group.code} with ${group.professor}`}>Leave class</button>}</li>)}</ul>
-          {!groups.length && <p className="workspace-hint">No classes yet. Use + in the class dropdown to add one.</p>}
+          {!groups.length && <p className="workspace-hint">No classes yet. Reload the preview to restore the sample classes.</p>}
         </div>
       </section>}
       {groups.map(group => <div key={group.id} hidden={profile || groupId !== group.id} className={styles.pane}>
