@@ -1,15 +1,11 @@
-import BottomNav from "@/components/BottomNav";
+import ClassHeader from "@/components/ClassHeader";
+import { classContext } from "@/lib/class-context";
 import { requireUser } from "@/lib/auth";
-import Link from "next/link";
 import "./workspace.css";
 
-// Mobile-first app shell: content column + fixed bottom tab bar (spec §6.2).
+// One enrolled course/professor workspace at a time.
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   await requireUser();
-  return (
-    <div className="workspace">
-      <header className="workspace-header"><Link href="/spaces" className="workspace-brand"><span aria-hidden="true">◎</span> studycircle</Link><span className="workspace-campus">Cal Poly</span></header>
-      <div className="workspace-layout"><aside className="workspace-sidebar"><BottomNav /></aside><div className="workspace-content">{children}</div></div>
-    </div>
-  );
+  const context = await classContext().catch(() => null);
+  return <div className="workspace"><ClassHeader groups={context?.groups || []} selectedId={context?.selected?.id} loadFailed={!context} /><div id="workspace-main" className="group-content">{children}</div></div>;
 }

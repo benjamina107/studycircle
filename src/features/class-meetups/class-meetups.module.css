@@ -1,0 +1,32 @@
+.screen { width: 100%; color: #253d33; }
+.header { margin-bottom: 24px; }
+.screen h1 { font-size: 1.85rem; font-weight: 700; margin: 0 0 8px; }
+.screen h2 { font-size: 1.2rem; font-weight: 650; margin: 0 0 8px; }
+.screen h3 { font-size: 1.1rem; font-weight: 650; margin: 0 0 12px; }
+.header p, .hint { color: #56635b; font-size: .9rem; }
+.hint { margin: 10px 0 18px; }
+.primary, .secondary { border-radius: 8px; padding: 10px 16px; font: inherit; font-weight: 600; cursor: pointer; min-height: 44px; }
+.primary { background: #304b3b; color: #fffefa; border: 1px solid #304b3b; }
+.primary:hover { background: #194e34; }
+.secondary { background: #fff; color: #284c37; border: 1px solid #aabaae; }
+.screen button:disabled { opacity: .6; cursor: wait; }
+.screen :is(button, input, textarea):focus-visible { outline: 3px solid #4e8864; outline-offset: 3px; }
+.form, .card, .notice { border: 1px solid #dfe2d6; border-radius: 12px; padding: clamp(16px, 3vw, 24px); background: #fffefa; }
+.form { margin-top: 16px; background: #f6f8f5; }
+.fields { border: 0; margin: 0; padding: 0; display: grid; gap: 16px; min-width: 0; }
+.field { display: grid; gap: 6px; min-width: 0; }
+.field label { font-size: .9rem; font-weight: 600; }
+.field input, .field textarea { background: #fff; color: #24352c; border: 1px solid #aebbb1; border-radius: 6px; font: inherit; padding: 10px; width: 100%; min-width: 0; box-sizing: border-box; }
+.field textarea { resize: vertical; }
+.field [aria-invalid="true"] { border-color: #a5372c; }
+.error { color: #923127; font-size: .9rem; margin: 4px 0; }
+.buttons, .rsvp { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.rsvp { margin-top: 18px; }
+.rsvp p { flex-basis: 100%; margin: 0; }
+.feed { display: grid; gap: 16px; list-style: none; margin: 18px 0 0; padding: 0; }
+.card { overflow-wrap: anywhere; }
+.card time { color: #42564a; font-size: .95rem; }
+.location { margin: 10px 0; font-weight: 550; }
+.blurb { white-space: pre-wrap; line-height: 1.6; margin: 12px 0; }
+.badge { color: #245138; background: #eaf3eb; border-radius: 6px; padding: 7px 10px; font-size: .85rem; display: inline-block; }
+.notice { background: #f6f8f5; margin-top: 16px; line-height: 1.6; }

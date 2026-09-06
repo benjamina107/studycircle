@@ -60,3 +60,61 @@
 .enrollment-search label { flex: 1; min-width: 0; }
 .workspace :is(a, button, input, textarea):focus-visible { outline: 2px solid #637747; outline-offset: 3px; }
 @media(max-width: 760px) { .workspace-header { height: 66px; padding: 0 22px; } .workspace-layout { display: block; } .workspace-sidebar { min-height: 0; padding: 0; border: 0; } .workspace-nav { position: fixed; bottom: 0; left: 0; right: 0; z-index: 20; background: #fffefa; border-top: 1px solid #dfe2d6; padding: 7px 12px calc(7px + env(safe-area-inset-bottom)); } .workspace-nav > div { display: flex; } .workspace-nav-link { flex: 1; justify-content: center; flex-direction: column; gap: 4px; font-size: 11px; padding: 8px; } .workspace-content { padding: 30px 22px 110px; } .page-heading h1 { font-size: 28px; } .course-grid { grid-template-columns: 1fr; } .course-card { min-height: 175px; padding: 22px; } .workspace-panel { padding: 20px; } }
+.group-header { display:flex; align-items:center; gap:32px; padding:18px max(24px,calc((100vw - 1200px)/2)); background:#fffefa; border-bottom:1px solid #e2e3d9; }
+.group-header .group-wordmark { font-size:22px; font-weight:600; }
+.group-picker { position:relative; min-width:0; margin-left:auto; width:360px; }
+.group-picker summary { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:9px 14px; border:1px solid #dfe2d6; border-radius:9px; cursor:pointer; list-style:none; }
+.group-picker summary::-webkit-details-marker { display:none; }
+.group-picker summary:focus-visible { outline:2px solid #637747; outline-offset:3px; }
+.group-picker-label { font-size:14px; font-weight:600; min-width:0; }
+.group-picker-label > span { display:block; font-size:12px; font-weight:400; color:#697365; margin-top:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.group-dropdown { position:absolute; top:calc(100% + 8px); right:0; width:420px; max-width:calc(100vw - 32px); z-index:40; padding:8px; background:#fffefa; border:1px solid #dfe2d6; border-radius:12px; box-shadow:0 16px 50px #253d331a; }
+.group-dropdown-title { padding:10px; font-size:11px; text-transform:uppercase; letter-spacing:.8px; color:#697365; }
+.group-options { max-height:340px; overflow:auto; }
+.group-option { display:block; width:100%; text-align:left; padding:12px; border-radius:7px; font-size:13px; cursor:pointer; }
+.group-option:hover, .group-option[aria-current] { background:#eff2e9; }
+.group-option small { display:block; margin-top:5px; color:#697365; }
+.group-selected-label { display:block; margin-top:5px; font-size:11px; color:#365d3e; }
+.group-manage { display:block; border-top:1px solid #e2e3d9; padding:14px 12px 8px; margin-top:8px; font-size:12px; }
+.group-dropdown-empty { padding:12px; font-size:13px; line-height:1.6; }
+.group-profile { display:flex; align-items:center; gap:8px; padding:12px; font-size:13px; border-radius:8px; }
+.group-profile:hover, .group-profile[aria-current] { background:#eff2e9; }
+.group-subheader { max-width:1200px; margin:auto; padding:24px 24px 0; }
+.group-course-meta { display:flex; justify-content:space-between; gap:16px; color:#697365; font-size:12px; }
+.group-tabs { position:fixed; bottom:0; left:0; right:0; z-index:30; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; border-top:1px solid #dfe2d6; background:#fffefa; padding:8px max(16px,calc((100vw - 720px)/2)) calc(8px + env(safe-area-inset-bottom,0px)); }
+.group-tabs > * { display:flex; flex-direction:column; gap:4px; align-items:center; justify-content:center; min-height:52px; padding:7px 8px; font-size:12px; cursor:pointer; border-radius:8px; color:#697365; }
+.group-tabs > *:hover { background:#eff2e9; }
+.group-tabs [aria-current] { background:#e6ebde; color:#304b3b; font-weight:600; }
+.group-content { max-width:1200px; margin:auto; padding:32px 24px 64px; min-width:0; }
+.workspace:has(.group-tabs) .group-content { padding-bottom:calc(104px + env(safe-area-inset-bottom,0px)); }
+.workspace:has(.group-tabs) :is(input,textarea,button,a) { scroll-margin-bottom:calc(88px + env(safe-area-inset-bottom,0px)); }
+.group-memory-error { max-width:1152px; margin:12px auto 0; padding:0 24px; font-size:12px; color:#765d30; }
+.group-skip { position:fixed; top:-100px; left:16px; z-index:100; background:#fff; padding:12px; }
+.group-skip:focus { top:12px; }
+@media(max-width:640px) {
+ .group-header { padding:14px 16px; gap:10px; flex-wrap:wrap; }
+ .group-header .workspace-brand { order:0; }
+ .group-profile { margin-left:auto; order:1; }
+ .group-picker { width:100%; order:2; }
+ .group-dropdown { width:100%; max-width:100%; }
+ .group-subheader { padding:20px 16px 0; }
+ .group-content { padding:24px 16px 40px; }
+ .group-course-meta { flex-wrap:wrap; gap:6px; }
+}
+.group-dropdown-heading { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+.class-icon-button { display:grid; place-items:center; width:44px; height:44px; border-radius:8px; color:#304b3b; cursor:pointer; font-size:26px; flex-shrink:0; }
+.class-icon-button:hover { background:#eff2e9; }
+.class-icon-button:disabled { opacity:.5; cursor:wait; }
+.class-dialog { margin:auto; width:min(560px,calc(100vw - 32px)); max-height:calc(100dvh - 48px); overflow:auto; background:#fffefa; color:#253d33; padding:24px; border:1px solid #dfe2d6; border-radius:14px; box-shadow:0 24px 80px #152d3326; }
+.class-dialog::backdrop { background:#172b2359; }
+.class-dialog-heading { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+.class-dialog-heading h2 { font-size:24px; font-weight:600; letter-spacing:-.5px; }
+.class-search-form { display:grid; gap:16px; margin:24px 0; }
+.class-search-results { margin-top:12px; display:grid; gap:4px; }
+.class-search-results li { display:flex; align-items:center; justify-content:space-between; gap:16px; border-top:1px solid #dfe2d6; padding:16px 0; font-size:13px; }
+.class-search-results li > div { min-width:0; overflow-wrap:anywhere; }
+.class-search-results p, .class-search-results small { color:#697365; margin-top:5px; display:block; }
+.class-leave-confirm { display:flex; gap:8px; flex-wrap:wrap; }
+.class-leave-confirm p { flex-basis:100%; font-size:13px; line-height:1.6; }
+.enrollment-list li:has(.class-leave-confirm) { flex-wrap:wrap; }
+@media(max-width:480px) { .class-dialog { padding:18px; } }
