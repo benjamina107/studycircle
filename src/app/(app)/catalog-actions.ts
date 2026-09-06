@@ -14,7 +14,7 @@ export async function searchClassSections(course: string, professor: string): Pr
   if (!courseText && !professorText) return { sections: [], enrolledIds: [], message: "Enter a course or professor to search." };
   try {
     const db = await createClient();
-    let query = db.from("sections").select("id,section_code,courses!inner(code,title,term),professors!inner(name)");
+    let query = db.from("sections").select("id,section_code,days,start_time,end_time,location,courses!inner(code,title,term),professors!inner(name)");
     if (courseText) query = query.or(`code.ilike.%${courseText}%,title.ilike.%${courseText}%`, { referencedTable: "courses" });
     if (professorText) query = query.ilike("professors.name", `%${professorText}%`);
     const [catalog, enrolled] = await Promise.all([

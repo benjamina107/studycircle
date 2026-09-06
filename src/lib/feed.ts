@@ -1,6 +1,8 @@
 export type ActionResult = { ok: boolean; message: string };
 export type CourseSection = {
   id: string; section_code: string;
+  // Meeting details are only selected where they help identify a section.
+  days?: string | null; start_time?: string | null; end_time?: string | null; location?: string | null;
   courses: { code: string; title: string; term: string };
   professors: { name: string };
 };

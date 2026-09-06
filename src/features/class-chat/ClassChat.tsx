@@ -1,30 +1,63 @@
 "use client";
 
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { chatRequest, sendPending, type PendingMessage } from "./client";
+import { useFillViewport } from "@/lib/use-fill-viewport";
 import type { ClassFile, Conversation, Message } from "./types";
 import styles from "./ClassChat.module.css";
+
+const CHANNELS = [
+  { id: "general", label: "General" },
+  { id: "homework", label: "Homework" },
+] as const;
+
+function useDismiss(active: boolean, onDismiss: () => void, ref: React.RefObject<HTMLElement | null>) {
+  useEffect(() => {
+    if (!active) return;
+    function onClick(event: MouseEvent) { if (ref.current && !ref.current.contains(event.target as Node)) onDismiss(); }
+    function onKey(event: globalThis.KeyboardEvent) { if (event.key === "Escape") onDismiss(); }
+    document.addEventListener("click", onClick);
+    document.addEventListener("keydown", onKey);
+    return () => { document.removeEventListener("click", onClick); document.removeEventListener("keydown", onKey); };
+  }, [active, onDismiss, ref]);
+}
 
 export default function ClassChat({ subspaceId }: { subspaceId: string }) {
   return subspaceId ? <ClassChannels key={subspaceId} subspaceId={subspaceId} /> : <p className={styles.empty}>Choose a class above to open its chat.</p>;
 }
 
 function ClassChannels({ subspaceId }: { subspaceId: string }) {
-  const [channel, setChannel] = useState("general");
-  return <section className={styles.chat} aria-label="Class chat">
+  const [channel, setChannel] = useState<string>("general");
+  const [switcherOpen, setSwitcherOpen] = useState(false);
+  const switcherRef = useRef<HTMLDivElement>(null);
+  const { sectionRef, height } = useFillViewport<HTMLElement>();
+  const current = CHANNELS.find((entry) => entry.id === channel) ?? CHANNELS[0];
+
+  useDismiss(switcherOpen, () => setSwitcherOpen(false), switcherRef);
+
+  return <section ref={sectionRef} className={styles.chat} aria-label="Class chat" style={height ? { height } : undefined}>
     <header className={styles.header}>
-      <div><h1>Chat</h1><p>General discussion and homework questions.</p></div>
-      <nav className={styles.channels} aria-label="Chat channels">
-        {["general", "homework"].map((name) => <button key={name} type="button" aria-pressed={channel === name} onClick={() => setChannel(name)}>{name === "general" ? "General" : "Homework"}</button>)}
-      </nav>
+      <div className={styles.switcher} ref={switcherRef}>
+        <button type="button" className={styles.switcherButton} aria-haspopup="menu" aria-expanded={switcherOpen} onClick={() => setSwitcherOpen((value) => !value)}>
+          <span className={styles.hash} aria-hidden="true">#</span>{current.label}
+          <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m6 9 6 6 6-6" /></svg>
+        </button>
+        {switcherOpen && <ul className={styles.switcherMenu} role="menu" aria-label="Choose a channel">
+          {CHANNELS.map((entry) => <li key={entry.id} role="none">
+            <button type="button" role="menuitem" aria-current={entry.id === channel ? "true" : undefined} onClick={() => { setChannel(entry.id); setSwitcherOpen(false); }}>
+              <span className={styles.hash} aria-hidden="true">#</span>{entry.label}
+            </button>
+          </li>)}
+        </ul>}
+      </div>
     </header>
-    {["general", "homework"].map((name) => <div key={name} hidden={channel !== name}>
-      <ChatConversation subspaceId={subspaceId} channelName={name} visible={channel === name} />
+    {CHANNELS.map((entry) => <div key={entry.id} className={styles.panel} hidden={channel !== entry.id}>
+      <ChatConversation subspaceId={subspaceId} channelName={entry.id} channelLabel={entry.label} visible={channel === entry.id} />
     </div>)}
   </section>;
 }
 
-function ChatConversation({ subspaceId, channelName, visible }: { subspaceId: string; channelName: string; visible: boolean }) {
+function ChatConversation({ subspaceId, channelName, channelLabel, visible }: { subspaceId: string; channelName: string; channelLabel: string; visible: boolean }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [channelId, setChannelId] = useState("");
   const [loading, setLoading] = useState(true);
@@ -39,12 +72,18 @@ function ChatConversation({ subspaceId, channelName, visible }: { subspaceId: st
   const [filesError, setFilesError] = useState("");
   const [sendError, setSendError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [attachOpen, setAttachOpen] = useState(false);
   const pending = useRef<PendingMessage | null>(null);
   const sending = useRef(false);
   const active = useRef(true);
   const list = useRef<HTMLOListElement>(null);
   const nearBottom = useRef(true);
   const uploadInput = useRef<HTMLInputElement>(null);
+  const textarea = useRef<HTMLTextAreaElement>(null);
+  const form = useRef<HTMLFormElement>(null);
+  const attachWrap = useRef<HTMLDivElement>(null);
+
+  useDismiss(attachOpen, () => setAttachOpen(false), attachWrap);
 
   useEffect(() => { active.current = true; return () => { active.current = false; }; }, []);
   useEffect(() => {
@@ -74,6 +113,13 @@ function ChatConversation({ subspaceId, channelName, visible }: { subspaceId: st
   useEffect(() => {
     if (nearBottom.current && list.current) list.current.scrollTop = list.current.scrollHeight;
   }, [messages]);
+
+  useEffect(() => {
+    const el = textarea.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, 160)}px`;
+  }, [body]);
 
   async function openFiles() {
     setPicker(true); setFilesLoading(true); setFilesError("");
@@ -105,36 +151,64 @@ function ChatConversation({ subspaceId, channelName, visible }: { subspaceId: st
     } finally { sending.current = false; if (active.current) setBusy(false); }
   }
 
+  function onComposerKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
+    if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {
+      event.preventDefault();
+      form.current?.requestSubmit();
+    }
+  }
+
+  const canSend = !busy && !!channelId && (!!body.trim() || !!file || !!localFile);
+
   return <>
     {loading && <div className={styles.status} role="status">Loading conversation…</div>}
     {loadError && <div className={styles.error} role="alert">{loadError} <button type="button" onClick={() => setRefresh((value) => value + 1)}>Try again</button></div>}
     {!loading && !loadError && messages.length === 0 && <div className={styles.empty}><h3>No messages yet</h3><p>Send a message to start this channel.</p></div>}
-    <ol ref={list} className={styles.messages} aria-label={`${channelName} messages`} aria-live="polite" aria-relevant="additions" onScroll={() => { const el = list.current; if (el) nearBottom.current = el.scrollHeight - el.scrollTop - el.clientHeight < 80; }}>
-      {messages.map((message) => <li key={message.id} className={styles.message}>
-        <div className={styles.avatar} aria-hidden="true">{message.authorName === "You" ? "Y" : "C"}</div>
-        <div className={styles.messageContent}><div className={styles.byline}><strong>{message.authorName}</strong><time dateTime={message.createdAt}>{new Date(message.createdAt).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</time></div>
-          <p>{message.body}</p>
-          {message.file && <a className={styles.attachment} href={`/api/class-files/${encodeURIComponent(message.file.id)}/download`}>↧ {message.file.name}<span>{formatSize(message.file.size)}</span></a>}
-        </div>
-      </li>)}
+    <ol ref={list} className={styles.messages} aria-label={`${channelLabel} messages`} aria-live="polite" aria-relevant="additions" onScroll={() => { const el = list.current; if (el) nearBottom.current = el.scrollHeight - el.scrollTop - el.clientHeight < 80; }}>
+      {messages.map((message) => {
+        const own = message.authorName === "You";
+        return <li key={message.id} className={`${styles.message} ${own ? styles.own : styles.other}`}>
+          <div className={styles.bubbleGroup}>
+            {!own && <span className={styles.author}>{message.authorName}</span>}
+            <div className={styles.bubble}>
+              {message.body && <p>{message.body}</p>}
+              {message.file && <a className={styles.attachment} href={`/api/class-files/${encodeURIComponent(message.file.id)}/download`}>↧ {message.file.name}<span>{formatSize(message.file.size)}</span></a>}
+            </div>
+            <time className={styles.time} dateTime={message.createdAt}>{new Date(message.createdAt).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</time>
+          </div>
+        </li>;
+      })}
     </ol>
-    <form className={styles.composer} onSubmit={send}>
-      <label htmlFor={`message-${channelName}`}>Message {channelName === "general" ? "General" : "Homework"}</label>
-      <textarea id={`message-${channelName}`} value={body} disabled={busy} maxLength={2000} rows={3} placeholder="What’s on your mind?" onChange={(event) => { edit(); setBody(event.target.value); }} />
-      {(file || localFile) && <div className={styles.selected}><span>Attached: {file?.name ?? localFile?.name}</span><button type="button" disabled={busy} onClick={() => { edit(); setFile(null); setLocalFile(null); if (uploadInput.current) uploadInput.current.value = ""; }}>Remove</button></div>}
+    <form ref={form} className={styles.composer} onSubmit={send}>
+      {(file || localFile) && <div className={styles.selected}>
+        <span className={styles.attachName}>📎 {file?.name ?? localFile?.name}</span>
+        <span className={styles.attachSize}>{formatSize((file?.size ?? localFile?.size) ?? 0)}</span>
+        <button type="button" className={styles.removeAttachment} aria-label="Remove attachment" disabled={busy} onClick={() => { edit(); setFile(null); setLocalFile(null); if (uploadInput.current) uploadInput.current.value = ""; }}>×</button>
+      </div>}
       {picker && <div className={styles.picker}>
         <div className={styles.pickerTitle}><strong>Choose a class file</strong><button type="button" onClick={() => setPicker(false)}>Close</button></div>
         {filesLoading ? <p role="status">Loading files…</p> : filesError ? <p role="alert">{filesError} <button type="button" onClick={() => void openFiles()}>Retry</button></p> : files.length === 0 ? <p>No files yet. Upload a file below to share it.</p> : <ul>{files.map((entry) => <li key={entry.id}><button type="button" disabled={busy} onClick={() => { edit(); setFile(entry); setLocalFile(null); setPicker(false); }}>{entry.name} <span>{formatSize(entry.size)}</span></button></li>)}</ul>}
       </div>}
       {sendError && <p className={styles.error} role="alert">{sendError}</p>}
-      <div className={styles.actions}>
-        <input ref={uploadInput} type="file" className={styles.hidden} aria-label="Upload a file to attach" disabled={busy} onChange={(event) => { edit(); setLocalFile(event.target.files?.[0] ?? null); setFile(null); }} />
-        <button type="button" disabled={busy} onClick={() => uploadInput.current?.click()}>Upload file</button>
-        <button type="button" disabled={busy || filesLoading} onClick={() => void openFiles()}>Choose from Files</button>
-        <span className={styles.count}>{body.length}/2,000</span>
-        <button className={styles.send} type="submit" disabled={busy || !channelId || (!body.trim() && !file && !localFile)}>{busy ? localFile ? "Uploading & sending…" : "Sending…" : sendError ? "Retry send" : "Send"}</button>
+      <div className={styles.composerRow}>
+        <div className={styles.attachWrap} ref={attachWrap}>
+          <input ref={uploadInput} type="file" className={styles.hidden} aria-label="Upload a file to attach" disabled={busy} onChange={(event) => { edit(); setLocalFile(event.target.files?.[0] ?? null); setFile(null); }} />
+          <button type="button" className={styles.plusButton} aria-haspopup="menu" aria-expanded={attachOpen} aria-label="Attach a file" disabled={busy} onClick={() => setAttachOpen((value) => !value)}>
+            <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg>
+          </button>
+          {attachOpen && <div className={styles.attachMenu} role="menu">
+            <button type="button" role="menuitem" onClick={() => { setAttachOpen(false); uploadInput.current?.click(); }}>Upload a file</button>
+            <button type="button" role="menuitem" disabled={filesLoading} onClick={() => { setAttachOpen(false); void openFiles(); }}>Choose from Files</button>
+          </div>}
+        </div>
+        <label htmlFor={`message-${channelName}`} className={styles.srOnly}>Message {channelLabel}</label>
+        <textarea ref={textarea} id={`message-${channelName}`} value={body} disabled={busy} maxLength={2000} rows={1} placeholder={`Message #${channelName}`} onChange={(event) => { edit(); setBody(event.target.value); }} onKeyDown={onComposerKeyDown} />
+        <button className={styles.sendButton} type="submit" disabled={!canSend} aria-label={busy ? (localFile ? "Uploading and sending" : "Sending") : sendError ? "Retry send" : "Send message"}>
+          <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m22 2-7 20-4-9-9-4Z" /><path d="M22 2 11 13" /></svg>
+        </button>
       </div>
-      <p className={styles.hint}>One file per message. Uploaded files are also available in the class Files tab.</p>
+      {body.length > 1800 && <p className={styles.count}>{body.length}/2,000</p>}
+      <p className={styles.hint}>One file per message · Enter to send, Shift+Enter for a new line</p>
     </form>
   </>;
 }
