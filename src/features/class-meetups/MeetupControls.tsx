@@ -14,6 +14,8 @@ export function CreateMeetup({ spaceId, subspaceId }: { spaceId: string; subspac
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
   const button = useRef<HTMLButtonElement>(null);
+  const dialog = useRef<HTMLDialogElement>(null);
+  useEffect(()=>{if(open)dialog.current?.showModal();else dialog.current?.close();},[open]);
   const restoreFocus = useRef(false);
   const id = useId();
   useEffect(() => {
@@ -27,13 +29,14 @@ export function CreateMeetup({ spaceId, subspaceId }: { spaceId: string; subspac
     setOpen(false);
     setMessage(success);
   }
-  return <div>
-    <button ref={button} type="button" className={styles.primary} disabled={busy} aria-expanded={open} aria-controls={id}
-      onClick={() => { setOpen(!open); setMessage(""); }}>Create meetup</button>
-    <div id={id}>
+  return <div className={styles.createControl}>
+    <button ref={button} type="button" className={styles.primary} disabled={busy} aria-haspopup="dialog" aria-controls={id}
+      onClick={() => { setOpen(true); setMessage(""); }}><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg> Create meetup</button>
+    <dialog ref={dialog} id={id} className={styles.dialog} aria-label="Create a meetup" onCancel={event=>{event.preventDefault();if(!busy)close();}} onClose={()=>{if(!busy)setOpen(false);}}>
+      <button type="button" className={styles.close} disabled={busy} aria-label="Close create meetup" onClick={()=>close()}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
       {open && <CreationForm spaceId={spaceId} subspaceId={subspaceId} onClose={close} onPending={setBusy} />}
-    </div>
-    <p role="status" className={styles.hint}>{message}</p>
+    </dialog>
+    {message&&<p role="status" className={styles.creationStatus}>{message}</p>}
   </div>;
 }
 
@@ -57,10 +60,10 @@ function CreationForm({ spaceId, subspaceId, onClose, onPending }: { spaceId: st
   }, initial);
   useEffect(() => { title.current?.focus(); }, []);
   useEffect(() => { if (!state.ok && state.message) errorSummary.current?.focus(); }, [state]);
-  const labels: Record<keyof Draft, string> = { title: "Title", blurb: "Description (optional)", location: "Location", date: "Date", time: "Time" };
+  const labels: Record<keyof Draft, string> = { title: "Title", blurb: "A little more detail (optional)", location: "Location", date: "Date", time: "Time" };
   return <form action={action} className={styles.form} aria-labelledby={`${id}-heading`} aria-busy={pending}>
-    <h2 id={`${id}-heading`}>Plan a class meetup</h2>
-    <p id={`${id}-zone`} className={styles.hint}>Dates and times are in Pacific time.</p>
+    <h2 id={`${id}-heading`}>Plan a study session</h2>
+    <p id={`${id}-zone`} className={styles.hint}>Pick a place and a time. Your class can join from here.</p>
     <fieldset disabled={pending} className={styles.fields}>
       {(Object.keys(labels) as (keyof Draft)[]).map(key => {
         const props = {
@@ -69,14 +72,15 @@ function CreationForm({ spaceId, subspaceId, onClose, onPending }: { spaceId: st
           "aria-invalid": !!state.errors?.[key],
           "aria-describedby": `${key === "date" || key === "time" ? `${id}-zone ` : ""}${state.errors?.[key] ? `${id}-${key}-error` : ""}`.trim() || undefined,
         };
-        return <div key={key} className={styles.field}>
+        return <div key={key} className={styles.field} data-field={key}>
           <label htmlFor={props.id}>{labels[key]}</label>
           {key === "blurb" ? <textarea {...props} rows={3} maxLength={MEETUP_LIMITS.blurb} />
-            : <input {...props} ref={key === "title" ? title : undefined} type={key === "date" || key === "time" ? key : "text"}
+            : <input {...props} placeholder={key==='title'?'What are you studying?':key==='location'?'Building, room, or meeting link':undefined} ref={key === "title" ? title : undefined} type={key === "date" || key === "time" ? key : "text"}
               maxLength={key === "title" || key === "location" ? MEETUP_LIMITS[key] : undefined} />}
           {state.errors?.[key] && <p id={`${id}-${key}-error`} className={styles.error}>{state.errors[key]}</p>}
         </div>;
       })}
+      <p className={styles.timezone}>Date and time use campus time (Pacific).</p>
       <div className={styles.buttons}>
         <button className={styles.primary} type="submit">{pending ? "Creating…" : "Post meetup"}</button>
         <button className={styles.secondary} type="button" onClick={() => onClose()}>Cancel</button>
@@ -88,11 +92,11 @@ function CreationForm({ spaceId, subspaceId, onClose, onPending }: { spaceId: st
 
 export function ClassRsvp({ spaceId, subspaceId, meetupId, joined, hosting }: { spaceId: string; subspaceId: string; meetupId: string; joined: boolean; hosting: boolean }) {
   const [state, action, pending] = useActionState(classMeetupRsvp.bind(null, spaceId, subspaceId, meetupId), initial);
-  if (hosting) return <span className={styles.badge}>You’re hosting · Going</span>;
+  if (hosting) return <span className={styles.badge}>Hosting</span>;
   return <form action={action} className={styles.rsvp} aria-busy={pending}>
     <input type="hidden" name="intent" value={joined ? "leave" : "join"} />
-    <button className={joined ? styles.secondary : styles.primary} disabled={pending}>{pending ? "Updating…" : joined ? "Cancel RSVP" : "RSVP"}</button>
-    {joined && <span className={styles.badge}>Going</span>}
+    <button className={joined ? styles.secondary : styles.primary} disabled={pending}>{pending ? "Updating…" : joined ? "Leave session" : "Join session"}</button>
+
     {state.message && <p role={state.ok ? "status" : "alert"} className={styles.hint}>{state.message}</p>}
   </form>;
 }

@@ -71,7 +71,7 @@
 .channelPicker summary svg { margin-left:8px; color:#7b8b70; }
 .channelPicker summary:hover,.channelPicker[open] summary { background:#edf1e6; }
 .channelPicker summary:focus-visible { outline:2px solid #719365; outline-offset:2px; }
-.channelMenu { position:absolute; top:calc(100% + 8px); left:0; z-index:25; width:260px; max-width:calc(100vw - 40px); padding:7px; background:#fffefa; border:1px solid #dce4d3; border-radius:12px; box-shadow:0 8px 28px #233e3418; }
+.channelMenu { max-height:min(430px,60dvh); overflow-y:auto; overscroll-behavior:contain; position:absolute; top:calc(100% + 8px); left:0; z-index:25; width:260px; max-width:calc(100vw - 40px); padding:7px; background:#fffefa; border:1px solid #dce4d3; border-radius:12px; box-shadow:0 8px 28px #233e3418; }
 .channelMenuLabel { display:block; padding:10px 10px 8px; font-size:9px; letter-spacing:1.3px; color:#839176; }
 .channelMenu button { display:flex; width:100%; align-items:center; gap:10px; border:0; border-radius:7px; background:transparent; color:#52644b; text-align:left; padding:10px; cursor:pointer; }
 .channelMenu button:hover { background:#f0f3e9; }
