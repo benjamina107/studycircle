@@ -6,9 +6,9 @@ export type CourseGroup = { key: string; code: string; title: string; term: stri
 export function groupByCourse(sections: CourseSection[]): CourseGroup[] {
   const groups = new Map<string, CourseGroup>();
   for (const section of sections) {
-    const key = `${section.courses.code}·${section.courses.term}`;
+    const key = section.course_id || `${section.courses.code}·${section.courses.term}`;
     const group = groups.get(key) ?? { key, code: section.courses.code, title: section.courses.title, term: section.courses.term, sections: [] };
-    group.sections.push(section);
+    if (!group.sections.some(item => classPairKey(item) === classPairKey(section))) group.sections.push(section);
     groups.set(key, group);
   }
   for (const group of groups.values()) {
@@ -20,4 +20,8 @@ export function groupByCourse(sections: CourseSection[]): CourseGroup[] {
 export function meetingLabel(section: CourseSection): string {
   const time = section.start_time && section.end_time ? `${section.start_time}–${section.end_time}` : "";
   return [section.days || "", time, section.location || ""].filter(Boolean).join(" · ") || "Meeting time not listed";
+}
+
+export function classPairKey(section: CourseSection): string {
+ return JSON.stringify([section.course_id || `${section.courses.code}·${section.courses.term}`, section.professor_id || section.professors.name]);
 }

@@ -1,14 +1,23 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useRef } from "react";
 import { saveProfile } from "@/app/(app)/profile/actions";
 
 export type EditableProfile = { name: string | null; major: string | null; interests: string | null; avatar_url: string | null };
 
 export default function ProfileForm({ profile, email }: { profile: EditableProfile; email: string }) {
   const [state, action, pending] = useActionState(saveProfile, { message: "", ok: false });
+  const formRef = useRef<HTMLFormElement>(null);
+  useEffect(() => {
+    if (!state.ok || pending) return;
+    const editor = formRef.current?.closest<HTMLDetailsElement>('details.student-edit');
+    if (editor) {
+      editor.open = false;
+      editor.querySelector('summary')?.focus();
+    }
+  }, [state, pending]);
   const inputClass = "workspace-input";
-  return <form action={action} className="workspace-panel profile-form">
+  return <form ref={formRef} action={action} className="workspace-panel profile-form">
     <div className="profile-identity">
     {profile.avatar_url ? <div>{/* External HTTPS image loads in the browser, not through server fetching. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}

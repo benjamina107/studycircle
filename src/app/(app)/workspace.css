@@ -92,7 +92,7 @@
   .catalog-sections li { flex-wrap: wrap; }
   .catalog-sections .workspace-button, .catalog-sections .workspace-secondary { margin-left: auto; }
 }
-.workspace :is(a, button, input, textarea):focus-visible { outline: 2px solid #637747; outline-offset: 3px; }
+.workspace :is(a, button):focus-visible { outline: 2px solid #637747; outline-offset: 3px; }
 @media(max-width: 760px) { .workspace-header { height: 66px; padding: 0 22px; } .workspace-layout { display: block; } .workspace-sidebar { min-height: 0; padding: 0; border: 0; } .workspace-nav { position: fixed; bottom: 0; left: 0; right: 0; z-index: 20; background: #fffefa; border-top: 1px solid #dfe2d6; padding: 7px 12px calc(7px + env(safe-area-inset-bottom)); } .workspace-nav > div { display: flex; } .workspace-nav-link { flex: 1; justify-content: center; flex-direction: column; gap: 4px; font-size: 11px; padding: 8px; } .workspace-content { padding: 30px 22px 110px; } .page-heading h1 { font-size: 28px; } .course-grid { grid-template-columns: 1fr; } .course-card { min-height: 175px; padding: 22px; } .workspace-panel { padding: 20px; } }
 .group-header { position:relative; z-index:50; display:flex; align-items:center; gap:12px; padding:14px max(24px,calc((100vw - 1200px)/2)); background:#fffefa; border-bottom:1px solid #e2e3d9; }
 /* Absolute centering keeps the picker on the header's true midpoint, independent of the icons flanking it. */
@@ -177,3 +177,54 @@
 .student-edit>summary { position:absolute; top:144px; right:14px; }
 @media(max-width:600px) { .student-edit>summary{top:124px;right:0} }
 .group-content:has(#active-conversation) { padding-top:12px; padding-bottom:92px; }
+
+.leave-class-dialog { position:fixed; inset:0; margin:auto; width:min(440px,calc(100vw - 32px)); max-height:85dvh; overflow:auto; padding:26px; border:1px solid #dbe3d2; border-radius:14px; background:#fffefa; color:#304b3b; box-shadow:0 18px 60px #20362925; }
+.leave-class-dialog::backdrop { background:#26372e66; }
+.leave-class-dialog h2 { font-size:21px; font-weight:600; margin-bottom:14px; }
+.leave-class-dialog p { font-size:13px; line-height:1.7; margin:10px 0; color:#6c7b62; }
+.leave-class-actions { display:flex; justify-content:flex-end; gap:10px; margin-top:24px; }
+
+.student-add-trigger { margin-top:18px; }
+.add-class-dialog { position:fixed; inset:0; margin:auto; width:min(620px,calc(100vw - 32px)); max-height:85dvh; overflow:auto; padding:28px; border:1px solid #dbe3d2; border-radius:16px; background:#fffefa; color:#304b3b; box-shadow:0 18px 60px #20362925; }
+.add-class-dialog::backdrop { background:#26372e66; }
+.add-class-dialog .enrollment-add { margin:0; padding:0; border:0; display:block; }
+.add-class-heading { display:flex; justify-content:space-between; align-items:flex-start; gap:18px; margin-bottom:24px; }
+.add-class-heading h2 { font-size:23px; font-weight:600; margin:0 0 8px; }
+.add-class-heading p { font-size:13px; color:#7c8b70; }
+.add-class-heading>button { border:0; background:#eff3e8; color:#6c805e; border-radius:50%; width:32px; height:32px; font-size:23px; cursor:pointer; flex-shrink:0; }
+.add-class-dialog .catalog-results { max-height:45dvh; overflow:auto; }
+@media(max-width:600px){.add-class-dialog{padding:22px}.leave-class-dialog{padding:22px}}
+
+.student-classes-heading { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:20px; }
+.student-classes-heading h2 { margin:0; font-size:20px; font-weight:500; }
+.student-add-button { display:inline-flex; align-items:center; gap:8px; background:#e7eedc; color:#3e603f; border:1px solid #d5e0c9; border-radius:9px; padding:10px 14px; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap; }
+.student-add-button>span { font-size:19px; font-weight:400; line-height:1; }
+.student-add-button:hover { background:#dce8cf; }
+.student-add-button:focus-visible { outline:2px solid #719365; outline-offset:3px; }
+
+.add-class-heading>button { display:grid; place-items:center; padding:0; line-height:1; }
+.add-class-dialog .catalog-search .workspace-hint { margin-top:12px; line-height:1.7; }
+.add-class-dialog .catalog-status { margin:20px 0 14px; line-height:1.6; }
+.add-class-dialog .catalog-status:empty { display:none; }
+.add-class-dialog .catalog-results { margin-top:16px; overscroll-behavior:contain; }
+.add-class-dialog .catalog-course + .catalog-course { margin-top:16px; }
+
+.catalog-pagination { display:flex; align-items:center; justify-content:space-between; gap:12px; padding-top:18px; margin-top:18px; border-top:1px solid #e0e7d8; }
+.catalog-pagination>span { font-size:12px; color:#78896a; }
+
+.account-picker { position:relative; margin-left:auto; flex-shrink:0; }
+.account-picker>summary { list-style:none; cursor:pointer; margin:0; }
+.account-picker>summary::-webkit-details-marker { display:none; }
+.account-picker[open]>summary { background:#e9efdf; }
+.account-picker>summary:focus-visible { outline:2px solid #719365; outline-offset:3px; }
+.account-dropdown { position:absolute; right:0; top:calc(100% + 10px); z-index:60; width:220px; padding:7px; border:1px solid #dce4d3; border-radius:12px; background:#fffefa; box-shadow:0 12px 36px #243d3320; }
+.account-dropdown>a { display:block; padding:12px; font-size:13px; color:#405938; border-radius:7px; }
+.account-dropdown>a:hover,.account-dropdown>a[aria-current] { background:#edf2e5; }
+.account-logout { margin-top:6px; padding-top:6px; border-top:1px solid #e3e8da; }
+.account-logout button { width:100%; text-align:left; padding:12px; border:0; border-radius:7px; background:transparent; color:#aa4943; font-size:13px; cursor:pointer; }
+.account-logout button:hover { background:#faede8; }
+.account-logout button:disabled { opacity:.6; cursor:default; }
+.account-logout p { padding:0 12px 8px; color:#aa4943; font-size:11px; line-height:1.6; }
+.student-profile { padding-bottom:24px; }
+
+.group-content:has(#class-files-surface){padding-top:12px;}
