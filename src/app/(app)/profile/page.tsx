@@ -1,8 +1,6 @@
-import AuthLogout from "@/components/AuthLogout";
 import { requireUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import ProfileForm from "@/components/ProfileForm";
-import Link from "next/link";
 import EnrollmentForm from "@/components/EnrollmentForm";
 import type { CourseSection } from "@/lib/feed";
 
@@ -11,7 +9,7 @@ export default async function ProfilePage() {
   const supabase = await createClient();
   const { data: profile, error } = await supabase.from("profiles").select("name,major,interests,avatar_url").eq("id", user.id).single();
   // The catalog is searched from the client as the student types, so only their own classes load here.
-  const sectionSelect = "id,section_code,courses!inner(code,title,term),professors!inner(name)";
+  const sectionSelect = "id,course_id,professor_id,section_code,courses!inner(code,title,term),professors!inner(name)";
   const memberships = await supabase.from("enrollments").select("section_id").eq("user_id", user.id);
   const enrolledIds = (memberships.data || []).map(item => item.section_id);
   const enrolled = enrolledIds.length ? await supabase.from("sections").select(sectionSelect).in("id", enrolledIds).returns<CourseSection[]>() : { data: [], error: null };
@@ -29,6 +27,5 @@ export default async function ProfilePage() {
       <details className="student-edit"><summary>Edit profile</summary><ProfileForm profile={profile} email={user.email || ""}/></details>
     </>}
     {memberships.error || enrolled.error ? <p role="alert" className="workspace-notice">Your classes couldn’t be loaded. Please refresh and try again.</p> : <EnrollmentForm compact enrolled={enrolled.data || []} />}
-    <div className="student-account"><Link href="/settings">Notifications <span aria-hidden="true">→</span></Link><AuthLogout/></div>
   </main>;
 }

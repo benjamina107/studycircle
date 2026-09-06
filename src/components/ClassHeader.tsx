@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import BrandMark from "./BrandMark";
+import AuthLogout from "./AuthLogout";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { rememberClass } from "@/app/(app)/class-actions";
@@ -21,6 +22,7 @@ export default function ClassHeader({ groups, selectedId, loadFailed = false, pr
   const selected = active || preferredClass(groups, selectedId);
   const tab = preview?.tab || tabFromPath(path);
   const panel = useRef<HTMLDetailsElement>(null);
+  const account = useRef<HTMLDetailsElement>(null);
   const [rememberError, setRememberError] = useState(false);
   const activeId = active?.id;
   const isPreview = !!preview;
@@ -31,7 +33,7 @@ export default function ClassHeader({ groups, selectedId, loadFailed = false, pr
     return () => { cancelled = true; };
   }, [activeId, isPreview]);
   useEffect(() => {
-    const close = (event: MouseEvent) => { if (panel.current && !panel.current.contains(event.target as Node)) panel.current.open = false; };
+    const close = (event: MouseEvent) => { if (panel.current && !panel.current.contains(event.target as Node)) panel.current.open = false; if(account.current && !account.current.contains(event.target as Node)) account.current.open=false; };
     document.addEventListener("click", close);
     return () => document.removeEventListener("click", close);
   }, []);
@@ -47,7 +49,14 @@ export default function ClassHeader({ groups, selectedId, loadFailed = false, pr
           return preview ? <button key={group.id} className="group-option" onClick={() => { onPreviewChange?.(group.id, tab); if(panel.current) panel.current.open = false; }}>{content}</button> : <Link key={group.id} className="group-option" href={classHref(group, tab)} aria-current={selected?.id === group.id ? "true" : undefined} onClick={() => { if(panel.current) panel.current.open = false; }}>{content}</Link>;
         }) : <p className="group-dropdown-empty">{loadFailed ? "Your classes couldn’t be loaded. Refresh to try again." : "Choose your course sections in Profile to get started."}</p>}</div>{!preview && <Link href="/profile#classes" className="group-manage" onClick={() => { if(panel.current) panel.current.open = false; }}>Manage classes in Profile →</Link>}</div>
       </details>
-      <Link href={preview ? "/preview/workspace?view=profile" : "/profile"} onClick={event => { if (preview && onPreviewProfile) { event.preventDefault(); onPreviewProfile(); } }} className="group-profile" aria-label="Profile" aria-current={inProfile ? "page" : undefined}><svg aria-hidden="true" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 22v-2a8 8 0 0 1 16 0v2"/></svg></Link>
+      <details ref={account} className="account-picker" onKeyDown={event=>{if(event.key==='Escape'&&account.current){account.current.open=false;account.current.querySelector('summary')?.focus();}}}>
+        <summary className="group-profile" aria-label="Account menu"><svg aria-hidden="true" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 22v-2a8 8 0 0 1 16 0v2"/></svg></summary>
+        <nav className="account-dropdown" aria-label="Account">
+          <Link href={preview ? "/preview/workspace?view=profile" : "/profile"} aria-current={path==='/profile'?'page':undefined} onClick={event=>{if(account.current)account.current.open=false;if(preview&&onPreviewProfile){event.preventDefault();onPreviewProfile();}}}>Profile &amp; Courses</Link>
+          <Link href="/settings" aria-current={path==='/settings'?'page':undefined} onClick={()=>{if(account.current)account.current.open=false;}}>Settings</Link>
+          <div className="account-logout">{preview?<button type="button" disabled>Log out</button>:<AuthLogout/>}</div>
+        </nav>
+      </details>
     </header>
     {selected && <nav className="group-tabs" aria-label="Class workspace">{CLASS_TABS.map(item => preview ? <button key={item.id} aria-current={!inProfile && item.id === tab ? "page" : undefined} onClick={() => onPreviewChange?.(selected.id, item.id)}><TabLabel tab={item.id} label={item.label} /></button> : <Link key={item.id} href={classHref(selected, item.id)} aria-current={active && item.id === tab ? "page" : undefined}><TabLabel tab={item.id} label={item.label} /></Link>)}</nav>}
     {rememberError && <p role="status" className="group-memory-error">This class is open, but your last-opened preference couldn’t be saved.</p>}
