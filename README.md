@@ -17,7 +17,7 @@ Active Files uses `kb_uploads`/`kb_assets`, private `class-notes` Storage, and t
 
 ## Database and deployment
 
-There are **14 versioned SQL files (001–014)** in `supabase/migrations/`. Version 004 is a historical marker with no executable SQL. Compare hosted history and apply only missing reviewed versions; do not reset the shared database. Repository presence does not prove hosted application. The [database inventory](docs/database-migration.md) describes the original 17-table baseline, not the full current schema.
+There are **15 versioned SQL files (001–015)** in `supabase/migrations/`. Version 004 is a historical marker with no executable SQL. Compare hosted history and apply only missing reviewed versions; do not reset the shared database. Repository presence does not prove hosted application. The [database inventory](docs/database-migration.md) describes the original 17-table baseline, not the full current schema.
 
 Production needs a server-capable Next.js deployment (`npm run build`, then `npm start` for Node hosting) and a supervised persistent `npm run worker` process. Next.js alone does not drain AI jobs. Configure canonical HTTPS `APP_URL`, Auth redirects/SMTP, private Storage, server-only Supabase secret/service-role and OpenAI keys, ffprobe on web/worker hosts, and upload size/time allowances. Never expose secrets through `NEXT_PUBLIC_` variables or commit them. See [deployment checks](docs/supabase-setup.md).
 

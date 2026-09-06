@@ -13,7 +13,7 @@ Use one shared development project, invite teammates using their own accounts, a
 
 ## Reconcile and apply migrations
 
-There are **14 versioned SQL files**, not two. The original 17-table inventory is a baseline; later migrations add tables, functions, policies, and buckets.
+There are **15 versioned SQL files**, not two. The original 17-table inventory is a baseline; later migrations add tables, functions, policies, and buckets.
 
 | Version | Purpose |
 | --- | --- |
@@ -31,6 +31,7 @@ There are **14 versioned SQL files**, not two. The original 17-table inventory i
 | 202609050012 | Meetup integrity repair |
 | 202609050013 | Private AI chat |
 | 202609050014 | Classmates/direct messages |
+| 202609050015 | Additional predefined class chat channels |
 
 `202609050004_catalog.sql` contains only comments recording an empty historical remote entry. Preserve it; do not invent catalog SQL, treat it as an import, or rewrite applied history. Review version 008's sample data for the target project. Older feature docs calling class files/chat files versions 004/005 predate renumbering: the actual files are 010/011. Use the on-disk sequence above.
 
@@ -57,7 +58,7 @@ Never place service-role/secret, OpenAI, database-password, or SMTP credentials 
 
 ## Hosted acceptance checks
 
-- [ ] Compare all 14 versions with target migration history and inspect actual tables, functions, grants, policies, and buckets. History alone does not prove runtime behavior.
+- [ ] Compare all 15 versions with target migration history and inspect actual tables, functions, grants, policies, and buckets. History alone does not prove runtime behavior.
 - [ ] Verify real campus signup email delivery, one-time confirmation, and expired/reused-link failures. Test login, logout, refresh, unverified-user denial, and profile isolation on staging.
 - [ ] Confirm HTTPS URLs, Auth redirects, sender, password policy, and production rate limiting. Account recovery/reset remains separate work.
 - [ ] Check private `class-notes` upload/list/preview/download, membership isolation, processing, retry, deletion, and signed-link expiry using the [issue #6 checklist](issue-6-reconciliation.md#hosted-acceptance-checks-still-required).

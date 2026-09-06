@@ -28,4 +28,6 @@ Read root AGENTS.md and applicable bundled Next metadata/OG guide and metadata A
 
 Parent integration verification passed: all 137 offline tests (80 TypeScript and 57 Node tests), TypeScript checking, and the production build. Repository ESLint completed with zero errors and one pre-existing image warning in `MeetupCard.tsx`. The build compiled successfully and generated all 29 static pages; the landing route remains server-rendered. No deployment was performed.
 
+Before publication, merged main `6083288` (new meetup agenda, class channels, and migration 015) without conflicts. Repeated all 137 tests, repository lint, and the production build successfully on the combined result. Teammate meetup/channel files were preserved.
+
 Deployed-domain verification remains pending: configure/confirm the real HTTPS APP_URL; verify anonymous landing, signup/login navigation, authenticated redirect, publicly fetchable social image, rendered social URLs, and actual social crawler previews on the deployed domain. Local metadata rendering does not establish hosted availability or crawler success. No hosted verification or deployment was performed.
