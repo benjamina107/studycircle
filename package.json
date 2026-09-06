@@ -25,19 +25,27 @@
     "catalog:validate": "tsx scripts/catalog-validate.ts",
     "test:catalog": "tsx --test src/lib/catalog-validation.test.ts",
     "worker": "tsx scripts/knowledge-worker.ts",
-    "test:knowledge": "tsx --test src/lib/knowledge/*.test.ts"
+    "test:knowledge": "tsx --test src/lib/knowledge/*.test.ts",
+    "test:markdown": "tsx --test src/components/study/AIMessage.test.tsx"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.5",
     "@supabase/supabase-js": "^2.112.4",
     "file-type": "^22.0.2",
+    "katex": "^0.18.7",
     "mammoth": "^1.12.2",
     "next": "16.3.4",
     "openai": "^7.10.0",
     "pdf-lib": "^1.17.1",
     "react": "19.2.8",
     "react-dom": "19.2.8",
+    "react-markdown": "^10.1.0",
+    "rehype-katex": "^7.0.1",
+    "remark-gfm": "^4.0.1",
+    "remark-math": "^6.0.0",
+    "remark-parse": "^11.0.0",
     "sharp": "^0.35.4",
+    "unified": "^11.0.5",
     "yauzl": "^3.4.0"
   },
   "devDependencies": {

@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
+import ThemeProvider from "@/components/ThemeProvider";
 import { Geist, Geist_Mono } from "next/font/google";
+import "katex/dist/katex.min.css";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -28,13 +31,15 @@ export const metadata: Metadata = {
   twitter: { card: "summary", title, description, images: [socialImage] },
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const theme = (await cookies()).get("studycircle-theme")?.value === "dark" ? "dark" : "light";
   return (
     <html
       lang="en"
+      data-theme={theme}
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col"><ThemeProvider initialTheme={theme}>{children}</ThemeProvider></body>
     </html>
   );
 }
