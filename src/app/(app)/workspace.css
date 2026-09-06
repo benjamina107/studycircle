@@ -163,4 +163,4 @@
 .student-profile { position:relative; }
 .student-edit>summary { position:absolute; top:144px; right:14px; }
 @media(max-width:600px) { .student-edit>summary{top:124px;right:0} }
-.group-content:has(select#active-conversation) { padding-top:12px; padding-bottom:92px; }
+.group-content:has(#active-conversation) { padding-top:12px; padding-bottom:92px; }

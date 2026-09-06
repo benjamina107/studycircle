@@ -57,6 +57,55 @@
 
 .chatSurface .composerInput textarea { padding-right:56px; resize:none; border:1px solid #cbd5c5; transition:border-color .15s,box-shadow .15s; }
 .chatSurface .composerInput textarea:focus,.chatSurface .composerInput textarea:focus-visible { outline:none; border-color:#7c9b79; box-shadow:0 0 0 1px #7c9b7926; }
-.sendIcon { position:absolute; right:12px; bottom:14px; width:32px; height:32px; display:grid; place-items:center; padding:0; border:0; border-radius:50%; background:#35583f; color:white; cursor:pointer; }
+.sendIcon { position:absolute; right:12px; top:50%; transform:translateY(-50%); width:32px; height:32px; display:grid; place-items:center; padding:0; border:0; border-radius:50%; background:#35583f; color:white; cursor:pointer; }
 .sendIcon:hover:not(:disabled) { background:#25472f; }
 .sendIcon:disabled { background:#dfe6d9; color:#8a9980; cursor:default; }
+
+.composerInput textarea { display:block; }
+
+.chatSurface .composerInput textarea { min-height:46px; height:46px; max-height:130px; line-height:20px; box-sizing:border-box; overflow-y:hidden; }
+
+.channelPicker { position:relative; display:block; }
+.channelPicker summary { display:flex; align-items:center; gap:9px; padding:7px 10px; margin-left:-10px; border-radius:8px; cursor:pointer; list-style:none; font-size:18px; font-weight:600; }
+.channelPicker summary::-webkit-details-marker { display:none; }
+.channelPicker summary>span { color:#8b9a7e; font-weight:400; }
+.channelPicker summary svg { margin-left:8px; color:#7b8b70; }
+.channelPicker summary:hover,.channelPicker[open] summary { background:#edf1e6; }
+.channelPicker summary:focus-visible { outline:2px solid #719365; outline-offset:2px; }
+.channelMenu { position:absolute; top:calc(100% + 8px); left:0; z-index:25; width:260px; max-width:calc(100vw - 40px); padding:7px; background:#fffefa; border:1px solid #dce4d3; border-radius:12px; box-shadow:0 8px 28px #233e3418; }
+.channelMenuLabel { display:block; padding:10px 10px 8px; font-size:9px; letter-spacing:1.3px; color:#839176; }
+.channelMenu button { display:flex; width:100%; align-items:center; gap:10px; border:0; border-radius:7px; background:transparent; color:#52644b; text-align:left; padding:10px; cursor:pointer; }
+.channelMenu button:hover { background:#f0f3e9; }
+.channelMenu button[aria-current] { background:#e9efdf; color:#345330; }
+.channelMenu strong { display:block; font-size:13px; font-weight:600; }
+.channelMenu small { display:block; font-size:10px; margin-top:4px; color:#7b8870; }
+.channelCheck { margin-left:auto; font-size:12px; }
+
+.answerEditorial { margin-top:14px; }
+.practiceSet { max-width:570px; border-left:3px solid #c6d6b5; padding:4px 0 0 23px; margin-top:22px; }
+.setEyebrow { font-size:9px; letter-spacing:1.5px; font-weight:700; color:#798c6e; }
+.practiceSet>h3 { font:30px/1.3 Georgia,serif; letter-spacing:-.5px; margin:12px 0 8px; color:#3e5935; }
+.practiceSet>p { font-size:12px; color:#738767; margin:0 0 22px; }
+.setActions { display:flex; flex-wrap:wrap; align-items:center; gap:20px; margin:18px 0 0; }
+.copySet { background:#3e603f; border:0; color:#fffefa; border-radius:7px; padding:12px 15px; cursor:pointer; font-size:12px; }
+.copySet:hover { background:#304f32; }
+.previewSet { border:0; background:none; color:#607a50; font-size:12px; padding:10px 0; text-decoration:underline; text-underline-offset:4px; cursor:pointer; }
+.setFooter { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:15px; border-top:1px solid #dfe5d7; margin-top:23px; padding-top:8px; }
+.setFooter>span { font-size:10px; color:#788b69; }
+.setFooter button,.sourcesLink { border:0; background:none; color:#677f55; font-size:11px; padding:8px 0; cursor:pointer; }
+.copyStatus { font-size:11px; color:#697d5d; line-height:1.7; margin-top:12px; }
+.setDialog { position:fixed; inset:0; margin:auto; width:min(620px,calc(100vw - 32px)); max-height:85dvh; overflow:auto; background:#fffefa; color:#314738; border:1px solid #dbe3d0; border-radius:14px; padding:24px; box-shadow:0 20px 80px #283d3520; }
+.setDialog::backdrop { background:#293d3455; }
+.setDialog header { display:flex; align-items:center; justify-content:space-between; gap:15px; margin-bottom:16px; }
+.setDialog header h2 { font:25px Georgia,serif; margin:0; }
+.setDialog header button { background:none; border:0; color:#718664; font-size:26px; width:32px; height:32px; cursor:pointer; }
+.cardList,.sourceList { list-style:none; padding:0; margin:0; }
+.cardList li { display:flex; gap:16px; padding:20px 0; border-bottom:1px solid #e4e9dc; }
+.cardList li>span { color:#91a67d; font:20px Georgia,serif; min-width:25px; }
+.cardList h3 { font-size:13px; font-weight:600; line-height:1.6; margin:0 0 8px; }
+.cardList p,.sourceList p { font-size:12px; line-height:1.7; color:#718461; white-space:pre-wrap; overflow-wrap:anywhere; margin:0; }
+.sourceList li { padding:18px 0; border-bottom:1px solid #e0e7d7; }
+.sourceList a { font-size:13px; text-decoration:underline; text-underline-offset:4px; overflow-wrap:anywhere; }
+.sourceList p { margin-top:7px; }
+.setDialog button:focus-visible,.setDialog a:focus-visible { outline:2px solid #7e9d69; outline-offset:3px; }
+@media(max-width:600px){.practiceSet{padding-left:17px}.practiceSet>h3{font-size:27px}.setDialog{padding:20px}.setActions{gap:16px}}

@@ -2,7 +2,7 @@
 import { useCallback,useEffect,useRef,useState,type FormEvent,type ReactNode } from 'react';
 import FeedRsvp from '@/components/FeedRsvp';
 import type { ChatInvite } from '@/components/chat/ChatDemo';
-import { ACCEPT_FILES,MAX_FILE_BYTES,quizletText,hasMention,type AnswerPayload } from '@/lib/knowledge/shared';
+import { ACCEPT_FILES,MAX_FILE_BYTES,quizletText,type AnswerPayload } from '@/lib/knowledge/shared';
 import type { ChatChannelId } from '@/lib/chat-demo';
 import styles from '@/components/chat/ChatDemo.module.css';
 import ui from './Study.module.css';
@@ -38,12 +38,27 @@ function MentionText({text}:{text:string}) {
 }
 function Cards({payload}:{payload:AnswerPayload}) {
  const [status,setStatus]=useState('');
- return <div className={ui.answer}>
-  {payload.cards?.length>0 && <><details><summary>{payload.cards.length} question / answer cards</summary><ol className={ui.cards}>{payload.cards.map((c,i)=><li key={i}><strong>{c.question}</strong><p>{c.answer}</p></li>)}</ol></details>
-   <div className={ui.actions}><button type="button" className={styles.submit} onClick={async()=>{try{await navigator.clipboard.writeText(quizletText(payload.cards));setStatus('Copied. In Quizlet, choose Import, paste, and use tabs between terms and definitions and new lines between cards.');}catch{setStatus('Copy is unavailable. Select and copy the text below.');}}}>Copy for Quizlet</button><a className={styles.link} href="https://quizlet.new" target="_blank" rel="noopener noreferrer">Open Quizlet ↗</a></div>
-   <details><summary>Import text</summary><textarea readOnly aria-label="Quizlet tab-separated import text" className={ui.export} value={quizletText(payload.cards)} /></details></>}
-  {!!payload.sources?.length && <details><summary>Sources ({payload.sources.length})</summary><ol className={ui.sources}>{payload.sources.map((s,i)=><li key={s.id}><a href={`/api/study/uploads/${s.uploadId}`} target="_blank" rel="noopener noreferrer">[{i+1}] {s.name} · {s.locator}</a></li>)}</ol></details>}
-  {status&&<p role="status" className={styles.small}>{status}</p>}
+ const [view,setView]=useState<'cards'|'sources'|'import'>('cards');
+ const dialog=useRef<HTMLDialogElement>(null);
+ const count=payload.cards?.length||0;
+ function open(next:typeof view){setView(next);dialog.current?.showModal();}
+ async function copy(){try{await navigator.clipboard.writeText(quizletText(payload.cards));setStatus('Copied. Paste into Quizlet’s import tool with tabs between questions and answers and new lines between cards.');}catch{setStatus('Select and copy the import text.');open('import');}}
+ return <div className={ui.answerEditorial}>
+  {count>0&&<div className={ui.practiceSet}>
+   <span className={ui.setEyebrow}>READY TO STUDY</span>
+   <h3>Practice cards</h3>
+   <p>{count} questions to check what you know.</p>
+   <div className={ui.setActions}><button type="button" className={ui.copySet} onClick={copy}>Copy for Quizlet</button><button type="button" className={ui.previewSet} onClick={()=>open('cards')}>Preview</button></div>
+   <div className={ui.setFooter}><span>{count} cards · Quizlet import</span>{!!payload.sources?.length&&<button type="button" onClick={()=>open('sources')}>{payload.sources.length} {payload.sources.length===1?'source':'sources'}</button>}</div>
+  </div>}
+  {!count&&!!payload.sources?.length&&<button type="button" className={ui.sourcesLink} onClick={()=>open('sources')}>{payload.sources.length} {payload.sources.length===1?'source':'sources'}</button>}
+  {status&&<p role="status" className={ui.copyStatus}>{status}</p>}
+  <dialog ref={dialog} className={ui.setDialog} onClick={event=>{if(event.target===event.currentTarget){const bounds=event.currentTarget.getBoundingClientRect();if(event.clientX<bounds.left||event.clientX>bounds.right||event.clientY<bounds.top||event.clientY>bounds.bottom)event.currentTarget.close();}}} aria-label={view==='sources'?'Sources':view==='import'?'Quizlet import text':'Practice cards'}>
+   <header><h2>{view==='sources'?'Sources':view==='import'?'Quizlet import text':'Practice cards'}</h2><button type="button" onClick={()=>dialog.current?.close()} aria-label="Close">×</button></header>
+   {view==='sources'?<ol className={ui.sourceList}>{payload.sources.map((source,i)=><li key={source.id}><a href={`/api/study/uploads/${source.uploadId}`} target="_blank" rel="noopener noreferrer">[{i+1}] {source.name}</a><p>{source.locator}</p></li>)}</ol>:view==='import'?<><p className={ui.copyStatus}>Paste into Quizlet’s import tool. Use tabs between questions and answers and new lines between cards.</p><textarea readOnly aria-label="Quizlet tab-separated import text" className={ui.export} value={quizletText(payload.cards)}/></>:<ol className={ui.cardList}>{payload.cards.map((card,i)=><li key={i}><span>{String(i+1).padStart(2,'0')}</span><div><h3>{card.question}</h3><p>{card.answer}</p></div></li>)}</ol>}
+   {view!=='sources'&&<div className={ui.setActions}><button type="button" className={ui.copySet} onClick={copy}>Copy for Quizlet</button>{view==='cards'&&<button type="button" className={ui.previewSet} onClick={()=>setView('import')}>Import text</button>}<a href="https://quizlet.new" target="_blank" rel="noopener noreferrer" className={ui.previewSet}>Open Quizlet</a></div>}
+   {status&&<p role="status" className={ui.copyStatus}>{status}</p>}
+  </dialog>
  </div>;
 }
 export function Notes({subspace,userId}:{subspace:string;userId:string}) {
@@ -86,6 +101,14 @@ function Conversation({subspace,channel,userId,invites}:{subspace:string;channel
  const {data,error,refresh}=usePoll<{messages:Message[]}>(url);
  const [draft,setDraft]=useState('');const [pending,setPending]=useState(false);const [failure,setFailure]=useState('');const [retryId,setRetryId]=useState<string|null>(null);
  const composer=useRef<HTMLTextAreaElement>(null);
+ useEffect(()=>{
+  const input=composer.current;if(!input)return;
+  const resize=()=>{input.style.height='auto';input.style.height=Math.min(input.scrollHeight+2,130)+'px';input.style.overflowY=input.scrollHeight+2>130?'auto':'hidden';};
+  resize();
+  const observer=new ResizeObserver(()=>{if(input.clientWidth!==width){width=input.clientWidth;resize();}});
+  let width=input.clientWidth;observer.observe(input);
+  return()=>observer.disconnect();
+ },[draft]);
  const [caret,setCaret]=useState(0);const [mentionDismissed,setMentionDismissed]=useState(false);
  const mentionMatch=draft.slice(0,caret).match(/(?:^|\s)@([a-z]*)$/i);
  const mention=mentionMatch && ['ai','classai'].some(name=>name.startsWith(mentionMatch[1].toLowerCase())) && !mentionDismissed && !pending;
@@ -120,7 +143,7 @@ function Conversation({subspace,channel,userId,invites}:{subspace:string;channel
   <form onSubmit={submit} className={styles.composer}><label htmlFor="study-draft">Message #{channel}</label>
    <div className={ui.composerInput}>
    {mention&&<div className={ui.mention} id="ai-mention-hint"><button type="button" onMouseDown={e=>e.preventDefault()} onClick={insertMention}><span className={ui.mentionAvatar} aria-hidden="true">AI</span><span><strong>ClassAI <small>@AI</small></strong></span><span className={ui.mentionKey}>Enter ↵</span></button><span className={ui.srOnly} role="status">ClassAI suggestion available. Press Enter or Tab to mention AI. Escape dismisses.</span></div>}
-   <textarea ref={composer} id="study-draft" value={draft} disabled={pending} maxLength={2000} aria-describedby={mention?'ai-mention-hint':undefined} placeholder="Message your class, or @AI make 20 cards about HW 3…" onSelect={e=>setCaret(e.currentTarget.selectionStart)} onChange={e=>{setDraft(e.target.value);setCaret(e.target.selectionStart);setMentionDismissed(false);setRetryId(null);}} onKeyDown={e=>{
+   <textarea ref={composer} rows={1} id="study-draft" value={draft} disabled={pending} maxLength={2000} aria-describedby={mention?'ai-mention-hint':undefined} placeholder="Message your class, or @AI make 20 cards about HW 3…" onSelect={e=>setCaret(e.currentTarget.selectionStart)} onChange={e=>{setDraft(e.target.value);setCaret(e.target.selectionStart);setMentionDismissed(false);setRetryId(null);}} onKeyDown={e=>{
     if(e.nativeEvent.isComposing)return;
     if(mention&&e.key==='Escape'){e.preventDefault();setMentionDismissed(true);return;}
     if(mention&&(e.key==='Enter'||e.key==='Tab')&&!e.shiftKey&&!e.ctrlKey&&!e.metaKey&&!e.altKey){e.preventDefault();insertMention();return;}
@@ -129,16 +152,23 @@ function Conversation({subspace,channel,userId,invites}:{subspace:string;channel
 
    <button type="submit" disabled={pending||!draft.trim()} className={ui.sendIcon} aria-label={pending?"Sending message":"Send message"}><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 19V5m-6 6 6-6 6 6"/></svg></button>
    </div>
-   <div className={styles.composeFooter}><span className={styles.small} role="status">{hasMention(draft)?<><span className={ui.mentionToken}>@AI</span> will reply when you send.</>:'Type @ to mention ClassAI.'}</span></div>
    {failure&&<p role="alert" className={styles.error}>{failure}</p>}
   </form>
  </>;
 }
 export default function ClassWorkspace({subspace,userId,classLabel,initialChannel='general',invites=[]}:{subspace:string;userId:string;classLabel:string;initialChannel?:ChatChannelId;invites?:ChatInvite[]}) {
  const [channel,setChannel]=useState<ChatChannelId>(initialChannel);
+ const channelMenu=useRef<HTMLDetailsElement>(null);
+ useEffect(()=>{
+  const close=(event:PointerEvent)=>{if(channelMenu.current&&!channelMenu.current.contains(event.target as Node))channelMenu.current.open=false;};
+  document.addEventListener('pointerdown',close);return()=>document.removeEventListener('pointerdown',close);
+ },[]);
  return <section className={ui.chatSurface} aria-label={classLabel+' chat'}>
   <header className={ui.chatToolbar}>
-   <div className={ui.channelPicker}><span aria-hidden="true">#</span><label className={ui.srOnly} htmlFor="active-conversation">Conversation</label><select id="active-conversation" value={channel} onChange={event=>setChannel(event.target.value as ChatChannelId)}><option value="general">General</option><option value="homework">Homework</option><option value="meetups">Meetups</option></select></div>
+   <details ref={channelMenu} className={ui.channelPicker} id="active-conversation" onKeyDown={event=>{if(event.key==='Escape'){event.preventDefault();if(channelMenu.current){channelMenu.current.open=false;channelMenu.current.querySelector('summary')?.focus();}}}}>
+    <summary aria-label={'Choose conversation. Current: '+channel}><span aria-hidden="true">#</span>{channel[0].toUpperCase()+channel.slice(1)}<svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="m6 9 6 6 6-6"/></svg></summary>
+    <nav className={ui.channelMenu} aria-label="Conversations"><span className={ui.channelMenuLabel}>CLASS CHANNELS</span>{(['general','homework','meetups'] as const).map(name=><button key={name} type="button" aria-current={channel===name?'true':undefined} onClick={()=>{setChannel(name);if(channelMenu.current){channelMenu.current.open=false;channelMenu.current.querySelector('summary')?.focus();}}}><span aria-hidden="true">#</span><span><strong>{name[0].toUpperCase()+name.slice(1)}</strong><small>{name==='general'?'Talk with your class':name==='homework'?'Questions and problem solving':'Plan a study session'}</small></span>{channel===name&&<span className={ui.channelCheck} aria-hidden="true">✓</span>}</button>)}</nav>
+   </details>
    <span className={ui.chatContext}>Class chat <span aria-hidden="true">·</span> @AI available</span>
   </header>
   <Conversation key={channel} subspace={subspace} channel={channel} userId={userId} invites={invites}/>
