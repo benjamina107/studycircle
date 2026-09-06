@@ -54,3 +54,9 @@
 .chatSurface textarea { min-height:60px; max-height:130px; font-size:14px; }
 .chatSurface button:focus-visible,.channelPicker select:focus-visible,.chatSurface textarea:focus-visible { outline:2px solid #508058; outline-offset:3px; }
 @media(max-width:600px){.chatSurface{height:calc(100dvh - 256px);min-height:300px}.chatToolbar{padding-top:0}.chatContext{font-size:10px}.channelPicker select{font-size:18px}.chatSurface .log{padding:16px 0}}
+
+.chatSurface .composerInput textarea { padding-right:56px; resize:none; border:1px solid #cbd5c5; transition:border-color .15s,box-shadow .15s; }
+.chatSurface .composerInput textarea:focus,.chatSurface .composerInput textarea:focus-visible { outline:none; border-color:#7c9b79; box-shadow:0 0 0 1px #7c9b7926; }
+.sendIcon { position:absolute; right:12px; bottom:14px; width:32px; height:32px; display:grid; place-items:center; padding:0; border:0; border-radius:50%; background:#35583f; color:white; cursor:pointer; }
+.sendIcon:hover:not(:disabled) { background:#25472f; }
+.sendIcon:disabled { background:#dfe6d9; color:#8a9980; cursor:default; }

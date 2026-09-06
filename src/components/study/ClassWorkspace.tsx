@@ -127,8 +127,9 @@ function Conversation({subspace,channel,userId,invites}:{subspace:string;channel
     if(e.key==='Enter'&&(e.metaKey||e.ctrlKey)){e.preventDefault();e.currentTarget.form?.requestSubmit();}
    }}/>
 
+   <button type="submit" disabled={pending||!draft.trim()} className={ui.sendIcon} aria-label={pending?"Sending message":"Send message"}><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 19V5m-6 6 6-6 6 6"/></svg></button>
    </div>
-   <div className={styles.composeFooter}><span className={styles.small} role="status">{hasMention(draft)?<><span className={ui.mentionToken}>@AI</span> will reply when you send.</>:'Type @ to mention ClassAI.'}</span><button disabled={pending||!draft.trim()} className={styles.submit}>{pending?'Sending…':'Send'}</button></div>
+   <div className={styles.composeFooter}><span className={styles.small} role="status">{hasMention(draft)?<><span className={ui.mentionToken}>@AI</span> will reply when you send.</>:'Type @ to mention ClassAI.'}</span></div>
    {failure&&<p role="alert" className={styles.error}>{failure}</p>}
   </form>
  </>;
