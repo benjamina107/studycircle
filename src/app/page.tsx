@@ -44,7 +44,6 @@ export default async function Home() {
               <p className="landing-lede">Chat, meetups, and shared notes for every course you&rsquo;re in.</p>
               <div className="landing-actions"><Link href="/signup" className="landing-cta">Create your account</Link></div>
               <p className="landing-note">For students with a calpoly.edu email.</p>
-              <p className="landing-preview-label">Illustrative preview &mdash; sample messages, files, AI answer, and meetup.</p>
             </div>
           </div>
         </section>
