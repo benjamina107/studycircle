@@ -2,3 +2,5 @@
 @media(max-width:700px){.directory{width:100%;border:0;padding-right:0}.welcome{display:none}.surface[data-conversation=true] .directory{display:none}.conversation{padding-left:0}.surface{width:100%}}
 
 .ai{position:sticky;top:0;z-index:2}.person small{margin-left:5px}
+
+button.ai{cursor:pointer}button.ai:hover{background:#dfe8d5}

@@ -209,8 +209,11 @@ function Conversation({subspace,channel,userId,invites}:{subspace:string;channel
   </form>
  </>;
 }
+export function PrivateAIConversation({subspace,userId}:{subspace:string;userId:string}) {
+ return <div className={ui.chatSurface} style={{flex:1,minHeight:0,height:'auto'}}><Conversation subspace={subspace} userId={userId} channel="ai" invites={[]}/></div>;
+}
 export default function ClassWorkspace({subspace,userId,classLabel,initialChannel='general',invites=[]}:{subspace:string;userId:string;classLabel:string;initialChannel?:StudyChannel;invites?:ChatInvite[]}) {
- const [channel,setChannel]=useState<StudyChannel>(initialChannel==='meetups'?'general':initialChannel);
+ const [channel,setChannel]=useState<StudyChannel>(initialChannel==='meetups'||initialChannel==='ai'?'general':initialChannel);
  const {sectionRef,height}=useFillViewport<HTMLElement>();
  const channelMenu=useRef<HTMLDetailsElement>(null);
  useEffect(()=>{
@@ -221,7 +224,7 @@ export default function ClassWorkspace({subspace,userId,classLabel,initialChanne
   <header className={ui.chatToolbar}>
    <details ref={channelMenu} className={ui.channelPicker} id="active-conversation" onKeyDown={event=>{if(event.key==='Escape'){event.preventDefault();if(channelMenu.current){channelMenu.current.open=false;channelMenu.current.querySelector('summary')?.focus();}}}}>
     <summary aria-label={'Choose conversation. Current: '+channel}><span aria-hidden="true">#</span>{channel==='ai'?'Circle AI':channel[0].toUpperCase()+channel.slice(1)}<svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="m6 9 6 6 6-6"/></svg></summary>
-    <nav className={ui.channelMenu} aria-label="Conversations"><span className={ui.channelMenuLabel}>CLASS CHANNELS</span>{(['general','homework','ai'] as const).map(name=><button key={name} type="button" aria-current={channel===name?'true':undefined} onClick={()=>{setChannel(name);if(channelMenu.current){channelMenu.current.open=false;channelMenu.current.querySelector('summary')?.focus();}}}><span aria-hidden="true">#</span><span><strong>{name==='ai'?'Circle AI':name[0].toUpperCase()+name.slice(1)}</strong><small>{name==='general'?'Talk with your class':name==='homework'?'Questions and problem solving':'Private · Only you and Circle AI'}</small></span>{channel===name&&<span className={ui.channelCheck} aria-hidden="true">✓</span>}</button>)}</nav>
+    <nav className={ui.channelMenu} aria-label="Conversations"><span className={ui.channelMenuLabel}>CLASS CHANNELS</span>{(['general','homework'] as const).map(name=><button key={name} type="button" aria-current={channel===name?'true':undefined} onClick={()=>{setChannel(name);if(channelMenu.current){channelMenu.current.open=false;channelMenu.current.querySelector('summary')?.focus();}}}><span aria-hidden="true">#</span><span><strong>{name[0].toUpperCase()+name.slice(1)}</strong><small>{name==='general'?'Talk with your class':name==='homework'?'Questions and problem solving':'Private · Only you and Circle AI'}</small></span>{channel===name&&<span className={ui.channelCheck} aria-hidden="true">✓</span>}</button>)}</nav>
    </details>
    <span className={ui.chatContext}>{channel==='ai'?'Private · Only you and Circle AI':'Class chat · @Circle AI available'}</span>
   </header>
