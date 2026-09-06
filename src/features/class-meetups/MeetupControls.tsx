@@ -105,6 +105,16 @@ type OrganizerMeetup = { id: string; title: string; blurb: string | null; locati
 
 export function OrganizerControls({ spaceId, subspaceId, meetup, inactive }: { spaceId: string; subspaceId: string; meetup: OrganizerMeetup; inactive: boolean }) {
   const [editing, setEditing] = useState(false);
+  const editDialog = useRef<HTMLDialogElement>(null);
+  const editButton = useRef<HTMLButtonElement>(null);
+  const editDialogId = useId();
+  useEffect(() => {
+    if (editing) editDialog.current?.showModal();
+    else if (editDialog.current?.open) {
+      editDialog.current.close();
+      editButton.current?.focus();
+    }
+  }, [editing]);
   const router = useRouter();
   const [cancelState, cancelAction, cancelling] = useActionState(async (previous: Result, form: FormData) => {
     const result = await cancelClassMeetup(spaceId, subspaceId, meetup.id, previous, form);
@@ -121,22 +131,25 @@ export function OrganizerControls({ spaceId, subspaceId, meetup, inactive }: { s
   return <div className={styles.organizer}>
     <span className={styles.badge}>You’re hosting · Going</span>
     <div className={styles.buttons}>
-      <button type="button" className={styles.secondary} onClick={() => setEditing(value => !value)} aria-expanded={editing}>Edit details</button>
+      <button type="button" ref={editButton} className={styles.secondary} disabled={cancelling} onClick={() => setEditing(true)} aria-haspopup="dialog" aria-controls={editDialogId}>Edit details</button>
       <form action={cancelAction}><button className={styles.danger} disabled={cancelling}>{cancelling ? "Cancelling…" : "Cancel meetup"}</button></form>
     </div>
     {cancelState.message && <p role={cancelState.ok ? "status" : "alert"} className={styles.hint}>{cancelState.message}</p>}
+    <dialog ref={editDialog} id={editDialogId} className={styles.dialog} aria-labelledby={`${editDialogId}-heading`} onCancel={event=>{event.preventDefault();if(!pending)setEditing(false);}} onClose={()=>setEditing(false)}>
+      <button type="button" className={styles.close} disabled={pending} aria-label="Close edit meetup" onClick={()=>setEditing(false)}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
     {editing && <form action={action} className={styles.form} aria-busy={pending}>
-      <h4>Edit meetup</h4>
+      <h2 id={`${editDialogId}-heading`}>Edit meetup</h2>
       <p className={styles.hint}>Dates and times are in Pacific time.</p>
       <fieldset disabled={pending} className={styles.fields}>
         <div className={styles.field}><label htmlFor={`title-${meetup.id}`}>Title</label><input id={`title-${meetup.id}`} name="title" defaultValue={meetup.title} maxLength={MEETUP_LIMITS.title} required /></div>
         <div className={styles.field}><label htmlFor={`blurb-${meetup.id}`}>Description (optional)</label><textarea id={`blurb-${meetup.id}`} name="blurb" defaultValue={meetup.blurb ?? ""} maxLength={MEETUP_LIMITS.blurb} rows={3} /></div>
         <div className={styles.field}><label htmlFor={`location-${meetup.id}`}>Location</label><input id={`location-${meetup.id}`} name="location" defaultValue={meetup.location_name} maxLength={MEETUP_LIMITS.location} required /></div>
-        <div className={styles.field}><label htmlFor={`date-${meetup.id}`}>Date</label><input id={`date-${meetup.id}`} name="date" type="date" defaultValue={local.date} required /></div>
-        <div className={styles.field}><label htmlFor={`time-${meetup.id}`}>Time</label><input id={`time-${meetup.id}`} name="time" type="time" defaultValue={local.time} required /></div>
+        <div className={styles.field} data-field="date"><label htmlFor={`date-${meetup.id}`}>Date</label><input id={`date-${meetup.id}`} name="date" type="date" defaultValue={local.date} required /></div>
+        <div className={styles.field} data-field="time"><label htmlFor={`time-${meetup.id}`}>Time</label><input id={`time-${meetup.id}`} name="time" type="time" defaultValue={local.time} required /></div>
         <div className={styles.buttons}><button className={styles.primary}>{pending ? "Saving…" : "Save changes"}</button><button type="button" className={styles.secondary} onClick={() => setEditing(false)}>Close</button></div>
       </fieldset>
       {state.message && <p role={state.ok ? "status" : "alert"} className={state.ok ? styles.hint : styles.error}>{state.message}</p>}
     </form>}
+    </dialog>
   </div>;
 }

@@ -22,6 +22,6 @@ export async function POST(request: Request) {
       await supabase.auth.signOut({ scope: "local" });
       return json({ error: "Signup is currently unavailable. Please try again later." }, 503);
     }
-    return json({ message: "Check your inbox and spam folder for a confirmation email. If you find one, open the link to confirm your email. If you already have an account, try logging in.", next: "/verify" }, 202);
+    return json({ message: "Check your inbox and spam folder for a confirmation email. Enter its six-digit code to confirm your email. If you already have an account, try logging in.", next: "/verify" }, 202);
   } catch (error) { return apiError(error); }
 }

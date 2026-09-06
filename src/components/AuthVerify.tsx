@@ -23,6 +23,6 @@ export default function AuthVerify({ tokenHash, type }: { tokenHash: string; typ
     <p>Confirm your Cal Poly email to join your circle.</p>
     <button onClick={verify} disabled={pending} className="auth-submit">{pending ? "Confirming…" : "Confirm email and continue"}</button>
     {status && <p role="alert" className="auth-status" data-error="true">{status}</p>}
-    <p className="auth-links"><Link href="/verify">Request a new confirmation link</Link> · <Link href="/login">Try logging in</Link></p>
+    <p className="auth-links"><Link href="/verify">Request a verification code</Link> · <Link href="/login">Try logging in</Link></p>
   </div>;
 }

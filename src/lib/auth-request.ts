@@ -28,7 +28,7 @@ export function createAuthRequest(request: typeof fetch = fetch, timeoutMs = 150
       if (controller.signal.aborted) throw new Error(path.endsWith("/logout")
         ? "We couldn’t confirm that you’re logged out. Check your connection and try again."
         : path.endsWith("/login") ? "Login took too long. Check your connection and try again."
-        : path.endsWith("/verify") ? "We couldn’t confirm the result. Try logging in before requesting another link."
+        : path.endsWith("/verify") ? "We couldn’t confirm the result. Try logging in before requesting another code."
         : "This request took too long. Check your inbox or try logging in before retrying; the request may have completed.");
       if (error instanceof TypeError) throw new Error("We couldn’t connect. Check your connection and try again.");
       throw error;
