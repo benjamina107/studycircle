@@ -26,5 +26,5 @@ export async function POST(request:Request){try{
 export async function PATCH(request:Request){try{
  const target=new URL(request.url).searchParams.get('class')||'';const {user}=await classAccess(target,request);const input=await readJson(request);
  if(!uuid(input.peer)||!Array.isArray(input.ids)||input.ids.length>100||!input.ids.every(uuid))throw new InputError('Choose messages to mark read.');
- checked(await adminClient().from('class_direct_messages').update({read_at:new Date().toISOString()}).eq('subspace_id',target).eq('recipient_id',user.id).eq('sender_id',input.peer).in('id',input.ids).is('read_at',null));return json({ok:true});
+ const marked=checked(await adminClient().from('class_direct_messages').update({read_at:new Date().toISOString()}).eq('subspace_id',target).eq('recipient_id',user.id).eq('sender_id',input.peer).in('id',input.ids).is('read_at',null).select('id'));return json({ok:true,readIds:(marked||[]).map(m=>m.id)});
 }catch(e){return apiError(e);}}

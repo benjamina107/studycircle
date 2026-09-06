@@ -3,9 +3,12 @@ export async function markMessagesRead(
  peer:string,
  ids:string[],
  request:(url:string,options:RequestInit)=>Promise<unknown>,
- onRead:()=>void,
+ onRead:(peer:string,ids:string[])=>void,
  signal?:AbortSignal,
 ){
- await request(url,{method:'PATCH',signal,headers:{'Content-Type':'application/json'},body:JSON.stringify({peer,ids})});
- if(!signal?.aborted)onRead();
+ const result=await request(url,{method:'PATCH',signal,headers:{'Content-Type':'application/json'},body:JSON.stringify({peer,ids})});
+ if(!signal?.aborted){
+  const readIds=(result as {readIds?:unknown})?.readIds;
+  onRead(peer,Array.isArray(readIds)?readIds.filter((id):id is string=>typeof id==='string'&&ids.includes(id)):[]);
+ }
 }

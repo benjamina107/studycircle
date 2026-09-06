@@ -28,6 +28,18 @@
 @media(max-width:640px){.notes{padding:14px}.upload{padding:14px}.log{height:45vh}}
 
 .composerInput { position:relative; }
+.chatSurface .withAttachment textarea { padding-left:48px; }
+.attachIcon { position:absolute; left:9px; top:50%; transform:translateY(-50%); width:32px; height:32px; display:grid; place-items:center; padding:0; border:0; border-radius:50%; background:transparent; color:inherit; cursor:pointer; }
+.attachIcon:hover:not(:disabled) { background:light-dark(#e7ece2,var(--night-raised)); }
+.attachIcon:disabled { opacity:.45; cursor:default; }
+.attachmentQueue,.chatAttachments { display:flex; flex-wrap:wrap; gap:8px; }
+.attachmentQueue { margin-bottom:10px; }
+.attachmentQueue>span,.chatAttachments button { display:flex; align-items:center; gap:10px; max-width:100%; overflow-wrap:anywhere; padding:8px 12px; border:1px solid light-dark(#d7dfd0,var(--night-border)); border-radius:10px; background:light-dark(#f3f5ef,var(--night-surface)); color:inherit; font:inherit; font-size:13px; }
+.attachmentQueue>span button { border:0; background:transparent; color:inherit; cursor:pointer; font-size:18px; }
+.attachmentQueue>small { flex-basis:100%; opacity:.7; }
+.chatAttachments { margin-top:8px; }
+.chatAttachments button { align-items:flex-start; flex-direction:column; gap:3px; cursor:pointer; text-align:left; }
+.chatAttachments small { opacity:.65; font-size:11px; }
 .mention { position:absolute; bottom:calc(100% + 6px); left:0; z-index:20; width:min(250px,100%); border:1px solid light-dark(#d4dfd4, var(--night-border)); border-radius:8px; background:light-dark(#fff, var(--night-surface)); box-shadow:0 4px 16px #193b4218; }
 .mention button { width:100%; display:flex; align-items:center; gap:8px; padding:7px 10px; text-align:left; cursor:pointer; border-radius:8px; }
 .mention button:hover { background:light-dark(#f0f6ec, var(--night-raised)); }
