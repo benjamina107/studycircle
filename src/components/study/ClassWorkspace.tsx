@@ -8,7 +8,8 @@ import type { StudyChannel } from '@/lib/knowledge/channels';
 import styles from '@/components/chat/ChatDemo.module.css';
 import ui from './Study.module.css';
 import { useFillViewport } from '@/lib/use-fill-viewport';
-type Message={id:string;author_id:string|null;role:'user'|'assistant';body:string;payload:AnswerPayload|null;ai_status:string;error:string|null;created_at:string};
+type Attachment={id:string;file_name:string};
+type Message={author_name:string;attachments?:Attachment[];id:string;author_id:string|null;role:'user'|'assistant';body:string;payload:AnswerPayload|null;ai_status:string;error:string|null;created_at:string};
 type Upload={id:string;file_name:string;description:string;uploader_id:string;byte_size:number;created_at:string;kb_assets:{status:string;error:string|null}};
 async function api<T>(url:string,options?:RequestInit):Promise<T> {
  const response=await fetch(url,{...options,cache:'no-store'});const data=await response.json();
@@ -63,7 +64,7 @@ function Cards({payload}:{payload:AnswerPayload}) {
   </dialog>
  </div>;
 }
-function FilePreview({file,onClose}:{file:Upload|null;onClose:()=>void}) {
+function FilePreview({file,onClose}:{file:Attachment|null;onClose:()=>void}) {
  const dialog=useRef<HTMLDialogElement>(null);
  const [preview,setPreview]=useState<{kind:string;url?:string;text?:string;document?:boolean}|null>(null);
  const [failure,setFailure]=useState('');
@@ -154,6 +155,16 @@ function Conversation({subspace,channel,userId,invites}:{subspace:string;channel
  const {data,error,refresh}=usePoll<{messages:Message[]}>(url);
  const [draft,setDraft]=useState('');const [pending,setPending]=useState(false);const [failure,setFailure]=useState('');const [retryId,setRetryId]=useState<string|null>(null);
  const composer=useRef<HTMLTextAreaElement>(null);
+ const fileInput=useRef<HTMLInputElement>(null);
+ const [files,setFiles]=useState<File[]>([]);
+ const [attached,setAttached]=useState<string[]>([]);
+ const [previewFile,setPreviewFile]=useState<Attachment|null>(null);
+ function chooseFiles(next:File[]){
+  const combined=[...files,...next];
+  if(combined.length>5||combined.some(f=>f.size>MAX_FILE_BYTES)||combined.reduce((sum,f)=>sum+f.size,0)>29_000_000){setFailure('Choose up to 5 files, 25 MB each and 29 MB total.');return;}
+  setFiles(combined);setAttached([]);setRetryId(null);setFailure('');
+ }
+
  useEffect(()=>{
   const input=composer.current;if(!input)return;
   const resize=()=>{input.style.height='auto';input.style.height=Math.min(input.scrollHeight+2,130)+'px';input.style.overflowY=input.scrollHeight+2>130?'auto':'hidden';};
@@ -174,8 +185,15 @@ function Conversation({subspace,channel,userId,invites}:{subspace:string;channel
  }
  const log=useRef<HTMLDivElement>(null);const count=data?.messages.length||0;
  useEffect(()=>{if(log.current)log.current.scrollTop=log.current.scrollHeight;},[count]);
- async function submit(event:FormEvent){event.preventDefault();if(!draft.trim()||pending)return;setPending(true);setFailure('');const id=retryId||crypto.randomUUID();setRetryId(id);
-  try {await api(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,channel,body:draft.trim()})});setDraft('');setRetryId(null);refresh();}
+ async function submit(event:FormEvent){event.preventDefault();if((!draft.trim()&&!files.length)||pending)return;setPending(true);setFailure('');const id=retryId||crypto.randomUUID();setRetryId(id);
+  try {
+   let ids=attached;
+   if(files.length&&!ids.length){
+    const form=new FormData();files.forEach(file=>form.append('files',file));form.set('description',draft.trim().slice(0,1000));
+    const result=await api<{ids:string[]}>(`/api/study/uploads?class=${encodeURIComponent(subspace)}`,{method:'POST',body:form});ids=result.ids;setAttached(ids);
+   }
+   await api(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,channel,body:draft.trim()||'Shared files',attachmentIds:ids})});setDraft('');setFiles([]);setAttached([]);setRetryId(null);refresh();}
+
   catch(error){setFailure(error instanceof Error?error.message:'Message could not be sent.');}finally{setPending(false);}
  }
  async function retry(id:string){try{await api(url,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})});refresh();}catch(error){setFailure(error instanceof Error?error.message:'Please retry.');}}
@@ -186,27 +204,31 @@ function Conversation({subspace,channel,userId,invites}:{subspace:string;channel
    {!data&&!error&&<p>Loading messages…</p>}
    {data?.messages.length===0&&<p className={styles.empty}>{channel==='ai'?'Your private conversation with Circle AI. Ask about shared class notes or request practice cards—no mention needed.':'Start a conversation. Mention @Circle AI to ask about shared notes or request Quizlet cards.'}</p>}
    <ol className={styles.messages}>{data?.messages.map(m=><li key={m.id} className={styles.message}>
-    <span className={styles.avatar} aria-hidden="true">{m.role==='assistant'?'AI':m.author_id===userId?'Y':'C'}</span><div className={styles.messageBody}>
-     <div className={styles.messageMeta}><strong>{m.role==='assistant'?'Circle AI':m.author_id===userId?'You':'Classmate'}</strong><span>{new Date(m.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</span></div>
+    <span className={styles.avatar} aria-hidden="true">{m.role==='assistant'?'AI':(m.author_name||'?').split(' ').slice(0,2).map(n=>n[0]).join('')}</span><div className={styles.messageBody}>
+     <div className={styles.messageMeta}><strong>{m.role==='assistant'?'Circle AI':m.author_name}</strong><span>{new Date(m.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</span></div>
      {m.role==='assistant'?<AIMessage text={m.body} className={ui.markdown}/>:<p className={styles.messageText}>{channel==='ai'?m.body:<MentionText text={m.body}/>}</p>}{m.role==='assistant'&&m.payload&&<Cards payload={m.payload}/>}
+     {Boolean(m.attachments?.length)&&<div className={ui.chatAttachments}>{m.attachments?.map(file=><button type="button" key={file.id} onClick={()=>setPreviewFile(file)}>{file.file_name}<small>Preview file</small></button>)}</div>}
      {['queued','processing'].includes(m.ai_status)&&<p className={styles.status}>{m.ai_status==='queued'?'Circle AI is queued…':'Circle AI is reading the class notes…'}</p>}
      {m.ai_status==='failed'&&<p className={styles.error}>{m.error||'Circle AI could not respond.'} {m.author_id===userId&&<button onClick={()=>retry(m.id)}>Retry</button>}</p>}
     </div></li>)}</ol>
   </div>
   <form onSubmit={submit} className={styles.composer}><label htmlFor="study-draft">{channel==='ai'?'Message Circle AI':`Message #${channel}`}</label>
-   <div className={ui.composerInput}>
+   {files.length>0&&<div className={ui.attachmentQueue}>{files.map((file,i)=><span key={i}>{file.name}<button type="button" disabled={pending||attached.length>0} aria-label={'Remove '+file.name} onClick={()=>{setFiles(files.filter((_,index)=>index!==i));setRetryId(null);}}>×</button></span>)}<small>Shared with your class and saved in Files.{attached.length>0?' Uploaded — retry sending your message.':''}</small></div>}
+   <div className={`${ui.composerInput} ${channel!=='ai'?ui.withAttachment:''}`}>
+   {channel!=='ai'&&<><input ref={fileInput} type="file" multiple accept={ACCEPT_FILES} hidden onChange={e=>{chooseFiles(Array.from(e.target.files||[]));e.target.value='';}}/><button type="button" className={ui.attachIcon} disabled={pending||attached.length>0} aria-label="Attach files" title="Attach files" onClick={()=>fileInput.current?.click()}><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button></>}
    {mention&&<div className={ui.mention} id="ai-mention-hint"><button type="button" onMouseDown={e=>e.preventDefault()} onClick={insertMention}><span className={ui.mentionAvatar} aria-hidden="true">AI</span><span><strong>Circle AI <small>@Circle AI</small></strong></span><span className={ui.mentionKey}>Enter ↵</span></button><span className={ui.srOnly} role="status">Circle AI suggestion available. Press Enter or Tab to mention AI. Escape dismisses.</span></div>}
-   <textarea ref={composer} rows={1} id="study-draft" value={draft} disabled={pending} maxLength={2000} aria-describedby={mention?'ai-mention-hint':undefined} placeholder={channel==='ai'?'Ask Circle AI about your class…':'Message your class, or @Circle AI make 20 cards about HW 3…'} onSelect={e=>setCaret(e.currentTarget.selectionStart)} onChange={e=>{setDraft(e.target.value);setCaret(e.target.selectionStart);setMentionDismissed(false);setRetryId(null);}} onKeyDown={e=>{
+   <textarea ref={composer} rows={1} id="study-draft" value={draft} disabled={pending} maxLength={2000} aria-describedby={mention?'ai-mention-hint':undefined} placeholder={channel==='ai'?'Ask Circle AI about your class…':'Message or @Circle AI…'} onSelect={e=>setCaret(e.currentTarget.selectionStart)} onChange={e=>{setDraft(e.target.value);setCaret(e.target.selectionStart);setMentionDismissed(false);setRetryId(null);}} onKeyDown={e=>{
     if(e.nativeEvent.isComposing)return;
     if(mention&&e.key==='Escape'){e.preventDefault();setMentionDismissed(true);return;}
     if(mention&&(e.key==='Enter'||e.key==='Tab')&&!e.shiftKey&&!e.ctrlKey&&!e.metaKey&&!e.altKey){e.preventDefault();insertMention();return;}
     if(e.key==='Enter'&&(e.metaKey||e.ctrlKey)){e.preventDefault();e.currentTarget.form?.requestSubmit();}
    }}/>
 
-   <button type="submit" disabled={pending||!draft.trim()} className={ui.sendIcon} aria-label={pending?"Sending message":"Send message"}><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 19V5m-6 6 6-6 6 6"/></svg></button>
+   <button type="submit" disabled={pending||(!draft.trim()&&!files.length)} className={ui.sendIcon} aria-label={pending?"Sending message":"Send message"}><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 19V5m-6 6 6-6 6 6"/></svg></button>
    </div>
    {failure&&<p role="alert" className={styles.error}>{failure}</p>}
   </form>
+  {previewFile&&<FilePreview file={previewFile} onClose={()=>setPreviewFile(null)}/>}
  </>;
 }
 export function PrivateAIConversation({subspace,userId}:{subspace:string;userId:string}) {
