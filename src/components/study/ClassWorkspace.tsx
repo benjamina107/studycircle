@@ -215,10 +215,6 @@ export function PrivateAIConversation({subspace,userId}:{subspace:string;userId:
 export default function ClassWorkspace({subspace,userId,classLabel,invites=[]}:{subspace:string;userId:string;classLabel:string;invites?:ChatInvite[]}) {
  const {sectionRef,height}=useFillViewport<HTMLElement>();
  return <section ref={sectionRef} style={height===null?undefined:{height}} className={ui.chatSurface} aria-label={classLabel+' chat'}>
-  <header className={ui.chatToolbar}>
-   <span className={ui.channelTitle}><span aria-hidden="true">#</span>General</span>
-   <span className={ui.chatContext}>Class chat · @Circle AI available</span>
-  </header>
   <Conversation subspace={subspace} channel="general" userId={userId} invites={invites}/>
  </section>;
 }

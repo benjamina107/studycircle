@@ -42,17 +42,12 @@
 .mentionSelected { display:flex; align-items:center; gap:8px; margin-top:8px; color:light-dark(#42604c, var(--night-text)); font-size:12px; }
 
 .chatSurface { display:flex; flex-direction:column; height:calc(100dvh - 198px); min-height:360px; color:light-dark(#293e33, var(--night-text)); }
-.chatToolbar { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 0 16px; border-bottom:1px solid light-dark(#dfe5d9, var(--night-border)); flex-shrink:0; }
-.channelTitle { display:flex; align-items:center; gap:9px; font-size:18px; font-weight:600; }
-.channelTitle>span { color:light-dark(#8b9a7e, var(--night-muted)); font-weight:400; }
-.chatContext { color:light-dark(#78876f, var(--night-muted)); font-size:11px; }
-.chatContext>span { padding:0 5px; }
 .chatSurface .log { flex:1; min-height:0; max-height:none; height:auto; padding:22px 0; }
 .chatSurface>form { flex-shrink:0; padding:14px 0 12px; border-top:1px solid light-dark(#dfe5d9, var(--night-border)); }
 .chatSurface>form>label { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); }
 .chatSurface textarea { min-height:60px; max-height:130px; font-size:14px; }
 .chatSurface button:focus-visible,.chatSurface textarea:focus-visible { outline:2px solid light-dark(#508058, var(--night-accent)); outline-offset:3px; }
-@media(max-width:600px){.chatSurface{height:calc(100dvh - 256px);min-height:300px}.chatToolbar{padding-top:0}.chatContext{font-size:10px}.chatSurface .log{padding:16px 0}}
+@media(max-width:600px){.chatSurface{height:calc(100dvh - 256px);min-height:300px}.chatSurface .log{padding:16px 0}}
 
 .chatSurface .composerInput textarea { padding-right:56px; resize:none; border:1px solid light-dark(#cbd5c5, var(--night-border)); transition:border-color .15s,box-shadow .15s; }
 .sendIcon { position:absolute; right:12px; top:50%; transform:translateY(-50%); width:32px; height:32px; display:grid; place-items:center; padding:0; border:0; border-radius:50%; background:#35583f; color:white; cursor:pointer; }
