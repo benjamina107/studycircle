@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 
 // Run against `npm run dev`. No cookies, valid credentials, or usable tokens are sent.
 // Invalid inputs must be rejected before reaching Supabase signup or email APIs.
-const origin = 'http://localhost:3000';
+const origin = process.env.AUTH_SMOKE_ORIGIN || 'http://localhost:3000';
 let checks = 0;
 async function check(path, status, options = {}) {
   const response = await fetch(`${origin}${path}`, {
@@ -20,6 +20,7 @@ async function check(path, status, options = {}) {
 for (const path of ['/profile', '/spaces', '/chats', '/settings']) {
   const response = await check(path, 307);
   assert.equal(new URL(response.headers.get('location'), origin).pathname, '/login');
+  assert.equal(new URL(response.headers.get('location'), origin).searchParams.get('reason'), 'session');
 }
 for (const path of ['/login', '/signup', '/verify', '/preview/chat', '/preview/meetups']) {
   await check(path, 200);
@@ -45,4 +46,10 @@ await check('/api/auth/verify', 400, { method: 'POST', headers, body: JSON.strin
 const callback = await check('/api/auth/callback', 307);
 assert.equal(new URL(callback.headers.get('location')).pathname, '/verify');
 assert.equal(callback.headers.get('referrer-policy'), 'no-referrer');
+const recovery = await check('/verify?token_hash=invalid&type=recovery', 200);
+assert.match(await recovery.text(), /Password reset is not available here yet/);
+const invalidLink = await check('/verify?token_hash=invalid&type=email', 200);
+assert.match(await invalidLink.text(), /request another email below/);
+const session = await check('/login?reason=session', 200);
+assert.match(await session.text(), /Your session may have ended/);
 console.log(`PASS: ${checks} auth HTTP checks; no accounts created or emails requested.`);
