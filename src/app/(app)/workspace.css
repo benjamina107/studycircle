@@ -129,3 +129,37 @@
 .class-leave-confirm p { flex-basis:100%; font-size:13px; line-height:1.6; }
 .enrollment-list li:has(.class-leave-confirm) { flex-wrap:wrap; }
 @media(max-width:480px) { .class-dialog { padding:18px; } }
+
+/* Student-card profile: identity first, editing and enrollment on demand. */
+.student-profile { max-width:780px; margin:auto; padding:26px 34px 0; border:1px solid #dce3d4; background:#fffefa; border-radius:16px; color:#304b3b; }
+.student-cover { height:125px; background:#dfe8d1; border-radius:11px; display:flex; align-items:center; justify-content:space-between; padding:25px; color:#55704c; }
+.student-cover>span:first-child { font-size:10px; letter-spacing:2px; }
+.student-cover>span:last-child { font-size:76px; color:#8da87e; }
+.student-identity { margin-top:-30px; padding:0 14px; }
+.student-avatar { width:84px; height:84px; border:5px solid #fffefa; border-radius:50%; object-fit:cover; display:grid; place-items:center; background:#405c48; color:#f4f5df; font:28px Georgia,serif; }
+.student-identity h1 { font:36px Georgia,serif; letter-spacing:-1px; margin:18px 0 10px; overflow-wrap:anywhere; }
+.student-identity p { font-size:13px; line-height:1.7; margin:8px 0; }
+.student-identity p span { color:#7d8874; }
+.student-interests { color:#6d7e61; white-space:pre-wrap; overflow-wrap:anywhere; }
+.student-edit { margin:18px 14px 30px; }
+.student-edit>summary,.student-add>summary { display:table; padding:10px 15px; border:1px solid #cdd7c5; border-radius:7px; font-size:12px; color:#3e563f; cursor:pointer; list-style:none; }
+.student-edit>summary::-webkit-details-marker,.student-add>summary::-webkit-details-marker { display:none; }
+.student-edit .profile-form { margin-top:18px; max-width:none; }
+.student-edit .profile-identity { display:none; }
+.student-classes { border-top:1px solid #e4e8da; padding-top:26px; }
+.student-classes>h2 { font-size:20px; font-weight:500; margin-bottom:18px; }
+.student-classes .enrollment-list { display:grid; gap:12px; }
+.student-classes .enrollment-list li { border:1px solid #e0e5d7; padding:19px; border-radius:10px; display:flex; align-items:center; justify-content:space-between; gap:15px; flex-wrap:wrap; }
+.student-classes .enrollment-list strong { font-size:14px; }
+.student-classes .enrollment-list p { margin-top:6px; line-height:1.6; font-size:12px; color:#76846a; }
+.student-classes .enrollment-list .workspace-secondary { font-size:11px; padding:8px 12px; }
+.student-add { margin:18px 0; }
+.student-add[open] { background:#f5f7ef; padding:16px; border-radius:10px; }
+.student-add .enrollment-search { margin:18px 0; }
+.student-account { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:15px; border-top:1px solid #e4e8da; margin-top:28px; padding:22px 0; font-size:12px; color:#64775d; }
+.student-account a span { margin-left:12px; }
+.student-profile summary:focus-visible { outline:2px solid #4b7541; outline-offset:3px; }
+@media(max-width:600px) { .student-profile{padding:16px 18px 0}.student-cover{height:105px;padding:18px}.student-identity{padding:0}.student-identity h1{font-size:30px}.student-edit{margin-left:0;margin-right:0}.student-classes .enrollment-list li{padding:15px}.student-profile .enrollment-search{flex-wrap:wrap} }
+.student-profile { position:relative; }
+.student-edit>summary { position:absolute; top:170px; right:48px; }
+@media(max-width:600px) { .student-edit>summary{top:140px;right:22px} }
