@@ -49,7 +49,7 @@
 .chatContext { color:#78876f; font-size:11px; }
 .chatContext>span { padding:0 5px; }
 .chatSurface .log { flex:1; min-height:0; max-height:none; height:auto; padding:22px 0; }
-.chatSurface>form { flex-shrink:0; padding:14px 0 0; border-top:1px solid #dfe5d9; }
+.chatSurface>form { flex-shrink:0; padding:14px 0 12px; border-top:1px solid #dfe5d9; }
 .chatSurface>form>label { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); }
 .chatSurface textarea { min-height:60px; max-height:130px; font-size:14px; }
 .chatSurface button:focus-visible,.channelPicker select:focus-visible,.chatSurface textarea:focus-visible { outline:2px solid #508058; outline-offset:3px; }

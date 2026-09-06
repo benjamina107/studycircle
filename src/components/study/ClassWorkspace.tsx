@@ -6,6 +6,7 @@ import { ACCEPT_FILES,MAX_FILE_BYTES,quizletText,type AnswerPayload } from '@/li
 import type { ChatChannelId } from '@/lib/chat-demo';
 import styles from '@/components/chat/ChatDemo.module.css';
 import ui from './Study.module.css';
+import { useFillViewport } from '@/lib/use-fill-viewport';
 type Message={id:string;author_id:string|null;role:'user'|'assistant';body:string;payload:AnswerPayload|null;ai_status:string;error:string|null;created_at:string};
 type Upload={id:string;file_name:string;description:string;uploader_id:string;byte_size:number;created_at:string;kb_assets:{status:string;error:string|null}};
 async function api<T>(url:string,options?:RequestInit):Promise<T> {
@@ -158,12 +159,13 @@ function Conversation({subspace,channel,userId,invites}:{subspace:string;channel
 }
 export default function ClassWorkspace({subspace,userId,classLabel,initialChannel='general',invites=[]}:{subspace:string;userId:string;classLabel:string;initialChannel?:ChatChannelId;invites?:ChatInvite[]}) {
  const [channel,setChannel]=useState<ChatChannelId>(initialChannel);
+ const {sectionRef,height}=useFillViewport<HTMLElement>();
  const channelMenu=useRef<HTMLDetailsElement>(null);
  useEffect(()=>{
   const close=(event:PointerEvent)=>{if(channelMenu.current&&!channelMenu.current.contains(event.target as Node))channelMenu.current.open=false;};
   document.addEventListener('pointerdown',close);return()=>document.removeEventListener('pointerdown',close);
  },[]);
- return <section className={ui.chatSurface} aria-label={classLabel+' chat'}>
+ return <section ref={sectionRef} style={height===null?undefined:{height}} className={ui.chatSurface} aria-label={classLabel+' chat'}>
   <header className={ui.chatToolbar}>
    <details ref={channelMenu} className={ui.channelPicker} id="active-conversation" onKeyDown={event=>{if(event.key==='Escape'){event.preventDefault();if(channelMenu.current){channelMenu.current.open=false;channelMenu.current.querySelector('summary')?.focus();}}}}>
     <summary aria-label={'Choose conversation. Current: '+channel}><span aria-hidden="true">#</span>{channel[0].toUpperCase()+channel.slice(1)}<svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="m6 9 6 6 6-6"/></svg></summary>

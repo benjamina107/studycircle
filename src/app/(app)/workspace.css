@@ -94,7 +94,7 @@
 }
 .workspace :is(a, button, input, textarea):focus-visible { outline: 2px solid #637747; outline-offset: 3px; }
 @media(max-width: 760px) { .workspace-header { height: 66px; padding: 0 22px; } .workspace-layout { display: block; } .workspace-sidebar { min-height: 0; padding: 0; border: 0; } .workspace-nav { position: fixed; bottom: 0; left: 0; right: 0; z-index: 20; background: #fffefa; border-top: 1px solid #dfe2d6; padding: 7px 12px calc(7px + env(safe-area-inset-bottom)); } .workspace-nav > div { display: flex; } .workspace-nav-link { flex: 1; justify-content: center; flex-direction: column; gap: 4px; font-size: 11px; padding: 8px; } .workspace-content { padding: 30px 22px 110px; } .page-heading h1 { font-size: 28px; } .course-grid { grid-template-columns: 1fr; } .course-card { min-height: 175px; padding: 22px; } .workspace-panel { padding: 20px; } }
-.group-header { position:relative; display:flex; align-items:center; gap:12px; padding:14px max(24px,calc((100vw - 1200px)/2)); background:#fffefa; border-bottom:1px solid #e2e3d9; }
+.group-header { position:relative; z-index:50; display:flex; align-items:center; gap:12px; padding:14px max(24px,calc((100vw - 1200px)/2)); background:#fffefa; border-bottom:1px solid #e2e3d9; }
 /* Absolute centering keeps the picker on the header's true midpoint, independent of the icons flanking it. */
 .group-picker { position:absolute; left:50%; transform:translateX(-50%); min-width:0; max-width:min(520px,calc(100vw - 160px)); }
 .group-picker summary { display:flex; align-items:center; justify-content:center; gap:8px; padding:7px 10px; border-radius:9px; background:transparent; cursor:pointer; list-style:none; }
