@@ -39,10 +39,13 @@ verification, foreign keys, uniqueness and isolation by course and professor.
 ## Implementation status
 
 The database schema is provisioned. Local auth and profile integration is implemented;
-real email verification remains to be tested. Catalog validation is available offline.
+Catalog validation is available offline.
 Meetup and chat previews use sample data at `/preview/meetups` and `/preview/chat`;
 their persistence, catalog import and Storage uploads remain separate work.
-Custom SMTP and a real Cal Poly email-verification test remain pending. See
+Resend SMTP sends from the verified domain `studycircles.me`. A real Cal Poly
+verification email was delivered and the user confirmed their test worked;
+the message landed in Junk, so inbox placement remains an improvement area.
+See [Resend setup and validation](docs/resend-email-setup.md),
 [product specification](docs/productspec.md) and the repository issues.
 
 Offline checks: `npm run test:auth`, `npm run test:catalog`, and

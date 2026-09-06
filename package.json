@@ -6,6 +6,7 @@
     "test": "node --test tests/*.test.mjs",
     "test:profiles": "node --test tests/profiles.test.mjs",
     "check:supabase": "node scripts/check-supabase.mjs",
+    "check:email": "node scripts/check-auth-email.mjs",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
