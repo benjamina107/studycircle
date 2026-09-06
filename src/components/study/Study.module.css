@@ -40,3 +40,17 @@
 
 .mentionToken { background:#e0efdc; color:#195b46; border-radius:5px; padding:2px 5px; font-weight:700; box-decoration-break:clone; -webkit-box-decoration-break:clone; }
 .mentionSelected { display:flex; align-items:center; gap:8px; margin-top:8px; color:#42604c; font-size:12px; }
+
+.chatSurface { display:flex; flex-direction:column; height:calc(100dvh - 198px); min-height:360px; color:#293e33; }
+.chatToolbar { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 0 16px; border-bottom:1px solid #dfe5d9; flex-shrink:0; }
+.channelPicker { display:flex; align-items:center; gap:6px; }
+.channelPicker>span { color:#89967c; font-size:24px; }
+.channelPicker select { font-family:inherit; line-height:1.3; font-size:20px; font-weight:600; color:#304b3b; border:0; background:transparent; padding:6px 24px 6px 4px; cursor:pointer; max-width:210px; }
+.chatContext { color:#78876f; font-size:11px; }
+.chatContext>span { padding:0 5px; }
+.chatSurface .log { flex:1; min-height:0; max-height:none; height:auto; padding:22px 0; }
+.chatSurface>form { flex-shrink:0; padding:14px 0 0; border-top:1px solid #dfe5d9; }
+.chatSurface>form>label { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); }
+.chatSurface textarea { min-height:60px; max-height:130px; font-size:14px; }
+.chatSurface button:focus-visible,.channelPicker select:focus-visible,.chatSurface textarea:focus-visible { outline:2px solid #508058; outline-offset:3px; }
+@media(max-width:600px){.chatSurface{height:calc(100dvh - 256px);min-height:300px}.chatToolbar{padding-top:0}.chatContext{font-size:10px}.channelPicker select{font-size:18px}.chatSurface .log{padding:16px 0}}

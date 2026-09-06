@@ -6,7 +6,6 @@ import { ACCEPT_FILES,MAX_FILE_BYTES,quizletText,hasMention,type AnswerPayload }
 import type { ChatChannelId } from '@/lib/chat-demo';
 import styles from '@/components/chat/ChatDemo.module.css';
 import ui from './Study.module.css';
-import layout from '@/features/class-chat/ClassChat.module.css';
 type Message={id:string;author_id:string|null;role:'user'|'assistant';body:string;payload:AnswerPayload|null;ai_status:string;error:string|null;created_at:string};
 type Upload={id:string;file_name:string;description:string;uploader_id:string;byte_size:number;created_at:string;kb_assets:{status:string;error:string|null}};
 async function api<T>(url:string,options?:RequestInit):Promise<T> {
@@ -136,9 +135,10 @@ function Conversation({subspace,channel,userId,invites}:{subspace:string;channel
 }
 export default function ClassWorkspace({subspace,userId,classLabel,initialChannel='general',invites=[]}:{subspace:string;userId:string;classLabel:string;initialChannel?:ChatChannelId;invites?:ChatInvite[]}) {
  const [channel,setChannel]=useState<ChatChannelId>(initialChannel);
- return <section className={layout.chat} aria-label={classLabel+' chat'}>
-  <header className={layout.header}><div><h1>Chat</h1><p>Your class conversation, with ClassAI when you need it.</p></div>
-   <nav className={layout.channels} aria-label="Chat channels">{(['general','homework','meetups'] as const).map(c=><button key={c} type="button" aria-pressed={channel===c} onClick={()=>setChannel(c)}>{c[0].toUpperCase()+c.slice(1)}</button>)}</nav>
+ return <section className={ui.chatSurface} aria-label={classLabel+' chat'}>
+  <header className={ui.chatToolbar}>
+   <div className={ui.channelPicker}><span aria-hidden="true">#</span><label className={ui.srOnly} htmlFor="active-conversation">Conversation</label><select id="active-conversation" value={channel} onChange={event=>setChannel(event.target.value as ChatChannelId)}><option value="general">General</option><option value="homework">Homework</option><option value="meetups">Meetups</option></select></div>
+   <span className={ui.chatContext}>Class chat <span aria-hidden="true">·</span> @AI available</span>
   </header>
   <Conversation key={channel} subspace={subspace} channel={channel} userId={userId} invites={invites}/>
  </section>;

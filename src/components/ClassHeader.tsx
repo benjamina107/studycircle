@@ -49,7 +49,7 @@ export default function ClassHeader({ groups, selectedId, loadFailed = false, pr
       </details>
       <Link href={preview ? "/preview/workspace?view=profile" : "/profile"} onClick={event => { if (preview && onPreviewProfile) { event.preventDefault(); onPreviewProfile(); } }} className="group-profile" aria-current={inProfile ? "page" : undefined}><svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 22v-2a8 8 0 0 1 16 0v2"/></svg><span>Profile</span></Link>
     </header>
-    {selected && !inProfile && <div className="group-subheader"><div className="group-course-meta"><span>{selected.title}</span><span>{selected.term}</span></div></div>}
+    {selected && !inProfile && tab !== "chat" && <div className="group-subheader"><div className="group-course-meta"><span>{selected.title}</span><span>{selected.term}</span></div></div>}
     {selected && <nav className="group-tabs" aria-label="Class workspace">{CLASS_TABS.map(item => preview ? <button key={item.id} aria-current={!inProfile && item.id === tab ? "page" : undefined} onClick={() => onPreviewChange?.(selected.id, item.id)}><TabLabel tab={item.id} label={item.label} /></button> : <Link key={item.id} href={classHref(selected, item.id)} aria-current={active && item.id === tab ? "page" : undefined}><TabLabel tab={item.id} label={item.label} /></Link>)}</nav>}
     {rememberError && <p role="status" className="group-memory-error">This class is open, but your last-opened preference couldn’t be saved.</p>}
   </>;
