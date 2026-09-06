@@ -1,4 +1,4 @@
-function isPublicClientKey(value: string | undefined) {
+function isPublicClientKey(value: string | undefined): value is string {
   // Supabase's newer publishable keys and existing legacy anon JWTs are both
   // safe browser credentials. Secret/service-role keys are never accepted.
   return !!value && (value.startsWith("sb_publishable_") || /^eyJ[A-Za-z0-9_-]*\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(value));
