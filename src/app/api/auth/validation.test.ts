@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { applicationOrigin, assertSameOrigin, avatarInput, calPolyEmail, passwordInput, readJson, textInput } from "./validation";
+import { applicationOrigin, assertSameOrigin, avatarInput, calPolyEmail, passwordInput, readJson, textInput, validateProfile } from "./validation";
 
 test("Cal Poly email is normalized and rejects domain/format bypasses", () => {
   assert.equal(calPolyEmail("  Student+study@CALPOLY.edu "), "student+study@calpoly.edu");
@@ -22,6 +22,19 @@ test("profile validation rejects executable URLs, credentials and oversized fiel
   for (const value of ["javascript:alert(1)", "data:image/svg+xml,x", "http://example.com/a", "https://user:secret@example.com/a"]) assert.throws(() => avatarInput(value));
   assert.throws(() => textInput(" ", "Name", 100, true));
   assert.throws(() => textInput("a".repeat(101), "Name", 100, true));
+});
+
+test("onboarding profile validation returns field errors without dropping entered values", () => {
+  const form = new FormData();
+  form.set("name", " "); form.set("major", "x".repeat(121)); form.set("interests", "ok"); form.set("avatar_url", "https://user:secret@example.com/picture.png");
+  const result = validateProfile(form);
+  assert.deepEqual(Object.keys(result.errors).sort(), ["avatar_url", "major", "name"]);
+  assert.equal(result.values.name, " ");
+  assert.equal(result.values.major.length, 121);
+  assert.equal(result.profile, undefined);
+  const valid = new FormData();
+  valid.set("name", "Alex Student"); valid.set("major", "Computer Science"); valid.set("interests", "Hiking"); valid.set("avatar_url", "https://example.com/me.png");
+  assert.deepEqual(validateProfile(valid).profile, { name: "Alex Student", major: "Computer Science", interests: "Hiking", avatar_url: "https://example.com/me.png" });
 });
 
 test("mutations reject absent and cross-site origins", () => {

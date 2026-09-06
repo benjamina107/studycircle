@@ -1,0 +1,5 @@
+# Profile onboarding
+
+Verified users are sent to `/onboarding` until their own `profiles.onboarding_completed_at` is set. The onboarding save validates the same name, major, interests, and HTTPS avatar rules used by profile editing, updates only the signed-in user's row, and marks completion in the same database update. Failed saves keep entered values and expose field-level errors.
+
+Apply migration `202609050016_profile_onboarding.sql` before deploying the app. It backfills only existing profiles whose name, major, interests, and avatar values already satisfy the current limits and whose avatar URL passes a conservative HTTPS authority check. Existing rows that cannot be safely validated remain in onboarding and can be corrected. A signup name copied by the auth trigger does not count as completion; new users must submit the onboarding form once. Completed users go directly to the profile workspace, and profile lookup failures show a recoverable error instead of granting workspace access.
