@@ -169,3 +169,32 @@
 .removeFileIcon{width:36px;height:36px;display:grid;place-items:center;border-radius:50%;padding:0}
 .removeFileIcon:hover{background:light-dark(#f0e7e0, var(--night-raised));color:light-dark(#945e4c, var(--night-danger))}
 .removeFileIcon:disabled{opacity:.4;cursor:default}
+
+/* AI prose is structured Markdown; human messages keep their original whitespace. */
+.markdown { margin-top:5px; min-width:0; font-size:14px; line-height:1.7; overflow-wrap:anywhere; }
+.markdown > :first-child { margin-top:0; }
+.markdown > :last-child { margin-bottom:0; }
+.markdown p { margin:0 0 12px; }
+.markdown :is(h1,h2,h3,h4,h5,h6) { font-weight:650; line-height:1.35; margin:20px 0 10px; }
+.markdown h1 { font-size:22px; }
+.markdown h2 { font-size:20px; }
+.markdown h3 { font-size:17px; }
+.markdown :is(h4,h5,h6) { font-size:15px; }
+.markdown :is(ul,ol) { padding-left:24px; margin:10px 0 14px; }
+.markdown ul { list-style:disc; }
+.markdown ol { list-style:decimal; }
+.markdown li { margin:5px 0; }
+.markdown li > p { margin:4px 0; }
+.markdown blockquote { border-left:3px solid light-dark(#94a487, var(--night-border)); padding-left:16px; margin:14px 0; color:light-dark(#52665f, var(--night-muted)); }
+.markdown a { text-decoration:underline; text-underline-offset:3px; color:light-dark(#195b46, var(--night-accent)); }
+.markdown :is(a,div[role='region']):focus-visible { outline:2px solid light-dark(#508058, var(--night-accent)); outline-offset:3px; }
+.markdown code { font-family:var(--font-geist-mono),monospace; font-size:.9em; border-radius:4px; padding:2px 5px; background:light-dark(#eaf0e3, var(--night-raised)); }
+.markdown pre { max-width:100%; overflow-x:auto; white-space:pre; padding:14px; margin:14px 0; border:1px solid light-dark(#dfe5d9, var(--night-border)); border-radius:9px; background:light-dark(#f1f5ef, var(--night-surface)); }
+.markdown pre code { padding:0; background:none; border-radius:0; overflow-wrap:normal; }
+.markdown table { border-collapse:collapse; width:100%; margin:12px 0; font-size:13px; }
+.markdown :is(th,td) { border:1px solid light-dark(#dfe5d9, var(--night-border)); padding:8px 12px; min-width:100px; text-align:left; }
+.markdown th { font-weight:650; background:light-dark(#eaf0e3, var(--night-raised)); }
+.markdown hr { border:0; border-top:1px solid light-dark(#dfe5d9, var(--night-border)); margin:20px 0; }
+.markdown :global(.katex-display) { max-width:100%; overflow-x:auto; overflow-y:hidden; padding:8px 0; }
+.markdown :global(.katex) { font-size:1.1em; overflow-wrap:normal; }
+.markdown :global(.katex-error) { white-space:pre-wrap; color:light-dark(#945e4c, var(--night-danger)) !important; }

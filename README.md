@@ -59,6 +59,8 @@ OpenAI integrations are the **Responses API** for extraction and answers (defaul
 
 Supported inputs are PDF, images, plain text, DOCX, and audio. Main limits are 1–5 files per submission, 25 MB per file, a 30 MB request ceiling, 60 PDF pages, and one hour of audio. DOCX embedded images require separate uploads. Video, slides, spreadsheets, scheduled summaries, and automatic Quizlet publication are outside the current implementation. See [AI setup and limits](docs/ai-knowledge-base.md).
 
+AI reply bodies render Markdown (including tables, lists, and code) with `react-markdown` and `remark-gfm`. `remark-math`, `rehype-katex`, and KaTeX render inline `$…$` / `\(…\)` and display `$$…$$` / `\[…\]` equations. Code stays literal; raw HTML and remote images are disabled. Human messages and Quizlet exports remain plain text. Run `npm run test:markdown` for rendering tests, or open `/preview/markdown` in development for a visual check. Restart the worker after deploying changes to its formatting instructions.
+
 ## API surface
 
 Paths below are relative to the app. Class-scoped study and classmates requests use a `class` query parameter containing the subspace ID.

@@ -1,5 +1,6 @@
 'use client';
 import { useCallback,useEffect,useRef,useState,type FormEvent,type ReactNode } from 'react';
+import AIMessage from './AIMessage';
 import FeedRsvp from '@/components/FeedRsvp';
 import type { ChatInvite } from '@/components/chat/ChatDemo';
 import { ACCEPT_FILES,MAX_FILE_BYTES,quizletText,type AnswerPayload } from '@/lib/knowledge/shared';
@@ -187,7 +188,7 @@ function Conversation({subspace,channel,userId,invites}:{subspace:string;channel
    <ol className={styles.messages}>{data?.messages.map(m=><li key={m.id} className={styles.message}>
     <span className={styles.avatar} aria-hidden="true">{m.role==='assistant'?'AI':m.author_id===userId?'Y':'C'}</span><div className={styles.messageBody}>
      <div className={styles.messageMeta}><strong>{m.role==='assistant'?'Circle AI':m.author_id===userId?'You':'Classmate'}</strong><span>{new Date(m.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</span></div>
-     <p className={styles.messageText}>{channel==='ai'?m.body:<MentionText text={m.body}/>}</p>{m.role==='assistant'&&m.payload&&<Cards payload={m.payload}/>}
+     {m.role==='assistant'?<AIMessage text={m.body} className={ui.markdown}/>:<p className={styles.messageText}>{channel==='ai'?m.body:<MentionText text={m.body}/>}</p>}{m.role==='assistant'&&m.payload&&<Cards payload={m.payload}/>}
      {['queued','processing'].includes(m.ai_status)&&<p className={styles.status}>{m.ai_status==='queued'?'Circle AI is queued…':'Circle AI is reading the class notes…'}</p>}
      {m.ai_status==='failed'&&<p className={styles.error}>{m.error||'Circle AI could not respond.'} {m.author_id===userId&&<button onClick={()=>retry(m.id)}>Retry</button>}</p>}
     </div></li>)}</ol>
