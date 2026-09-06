@@ -15,7 +15,7 @@ test("feed actions enforce identity, access, and honest mutation results", async
   let authCalls = 0;
   const query = () => {
     const chain: Record<string, unknown> = {};
-    for (const method of ["select", "eq", "single", "insert", "delete"]) chain[method] = (...args: unknown[]) => { calls.push({ method, args }); return chain; };
+    for (const method of ["select", "eq", "single", "insert", "delete", "order", "in", "limit", "upsert"]) chain[method] = (...args: unknown[]) => { calls.push({ method, args }); return chain; };
     chain.then = (resolve: (value: unknown) => void) => resolve(results.shift());
     return chain;
   };
@@ -58,11 +58,28 @@ test("feed actions enforce identity, access, and honest mutation results", async
       results = [{ error: { code: "23503" } }];
       assert.equal((await updateEnrollment(previous, fields({ section_id: "missing", intent: "add" }))).ok, false);
     });
-    await t.test("enrollment removal cannot affect another user or section", async () => {
-      calls.length = 0; results = [{ error: null }];
+    await t.test("enrollment removal is limited to the viewer and exact course/professor group", async () => {
+      calls.length = 0; results = [{data:{course_id:"course",professor_id:"professor"},error:null},{data:[{id:"section"},{id:"sibling"}],error:null},{ error: null }];
       assert.equal((await updateEnrollment(previous, fields({ section_id: "section", intent: "remove", user_id: "someone-else" }))).ok, true);
       assert.ok(calls.some(call => call.method === "eq" && call.args[0] === "user_id" && call.args[1] === "actual-user"));
-      assert.ok(calls.some(call => call.method === "eq" && call.args[0] === "section_id" && call.args[1] === "section"));
+      assert.ok(calls.some(call => call.method === "eq" && call.args[0] === "course_id" && call.args[1] === "course"));
+      assert.ok(calls.some(call => call.method === "eq" && call.args[0] === "professor_id" && call.args[1] === "professor"));
+      assert.deepEqual(calls.find(call => call.method === "in")?.args,["section_id",["section","sibling"]]);
+    });
+    await t.test("an existing sibling enrollment prevents a duplicate group membership", async () => {
+      calls.length=0; results=[{data:{course_id:"course",professor_id:"professor"},error:null},{data:[{id:"section"},{id:"sibling"}],error:null},{data:[{section_id:"sibling"}],error:null}];
+      assert.equal((await updateEnrollment(previous,fields({section_id:"section",intent:"add"}))).ok,true);
+      assert.ok(!calls.some(call=>call.method==="upsert"));
+      assert.deepEqual(calls.find(call=>call.method==="in")?.args,["section_id",["section","sibling"]]);
+    });
+    await t.test("group lookup and removal failures never report success", async () => {
+      for (const responses of [
+        [{data:{course_id:"course",professor_id:"professor"},error:null},{data:null,error:{code:"42501"}}],
+        [{data:{course_id:"course",professor_id:"professor"},error:null},{data:[{id:"section"}],error:null},{error:{code:"42501"}}],
+      ]) {
+        results=responses;
+        assert.equal((await updateEnrollment(previous,fields({section_id:"section",intent:"remove"}))).ok,false);
+      }
     });
   } finally { for (const [id, original] of replaced) { if (original) load.cache[id] = original; else delete load.cache[id]; } }
 });

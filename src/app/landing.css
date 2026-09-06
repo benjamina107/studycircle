@@ -1,6 +1,10 @@
 .landing { min-height: 100dvh; display: flex; flex-direction: column; background: #f7f6f1; color: #21302a; font-family: var(--font-geist-sans), Arial, sans-serif; color-scheme: light; }
 .landing-header, .landing-hero, .landing-section, .landing-close, .landing-footer { width: 100%; max-width: 1180px; margin: 0 auto; padding-left: 40px; padding-right: 40px; }
-.landing :is(a, button):focus-visible { outline: 2px solid #5f7448; outline-offset: 2px; }
+.landing :is(a, button, summary):focus-visible { outline: 2px solid #5f7448; outline-offset: 2px; }
+.landing-preview-label { max-width: 46ch; margin: 12px auto 0; color: #5c655b; font-size: 12px; line-height: 1.5; }
+.landing-faq details { border-top: 1px solid #e3e4d9; }
+.landing-faq summary { padding: 18px 4px; cursor: pointer; font-size: 15px; font-weight: 500; }
+.landing-faq details p { max-width: 72ch; padding: 0 4px 20px; color: #5c655b; font-size: 14px; line-height: 1.6; }
 .landing-header { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding-top: 28px; padding-bottom: 28px; }
 .landing-brand { display: inline-flex; align-items: center; gap: 9px; font-size: 19px; font-weight: 600; letter-spacing: -0.02em; }
 .landing-wordmark > span { font-weight: 400; }
@@ -19,12 +23,12 @@
 .landing-hero-copy { position: relative; z-index: 1; max-width: 680px; text-align: center; }
 .landing-hero h1 { text-wrap: balance; font-size: clamp(28px, 6vw, 58px); line-height: 1.06; letter-spacing: -0.035em; font-weight: 600; }
 .landing-hero h1 span { display: block; }
-.landing-hero h1 .muted { color: #97a094; }
+.landing-hero h1 .muted { color: #7a8575; }
 .landing-lede { margin: 22px auto 0; max-width: 48ch; color: #5c655b; font-size: 16px; line-height: 1.55; text-wrap: balance; }
 .landing-actions { display: flex; justify-content: center; gap: 12px; margin-top: 30px; }
-.landing-note { margin-top: 16px; font-size: 12.5px; color: #7a8178; }
+.landing-note { margin-top: 16px; font-size: 12.5px; color: #687163; }
 .float { position: absolute; width: 224px; padding: 14px 16px; border: 1px solid #e6e7dc; border-radius: 12px; background: #fff; box-shadow: 0 12px 30px rgba(40, 55, 45, .07), 0 2px 5px rgba(40, 55, 45, .04); }
-.float figcaption { color: #8a9084; font-size: 10.5px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
+.float figcaption { color: #687163; font-size: 10.5px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
 .float p { margin-top: 7px; font-size: 12.5px; line-height: 1.45; }
 .float .float-title { margin-top: 9px; font-size: 14px; font-weight: 600; letter-spacing: -0.01em; }
 .float .float-meta, .float .float-row { color: #6b736a; }
@@ -47,7 +51,7 @@
 .landing-close { padding-top: 62px; padding-bottom: 80px; border-top: 1px solid #e3e4d9; text-align: center; }
 .landing-close h2 { margin: 0 auto; max-width: 20ch; font-size: clamp(26px, 3.2vw, 34px); line-height: 1.16; letter-spacing: -0.025em; font-weight: 600; }
 .landing-close .landing-cta { margin-top: 24px; }
-.landing-footer { display: flex; justify-content: space-between; margin-top: auto; padding-top: 22px; padding-bottom: 32px; border-top: 1px solid #e3e4d9; color: #8a9084; font-size: 11px; }
+.landing-footer { display: flex; justify-content: space-between; margin-top: auto; padding-top: 22px; padding-bottom: 32px; border-top: 1px solid #e3e4d9; color: #687163; font-size: 11px; }
 @media (max-width: 1140px) { .float { width: 196px; } .float-meetup, .float-chat { left: 0; } .float-ai, .float-notes { right: 0; } }
 @media (max-width: 1000px) { .landing-stage { min-height: 0; padding: 60px 24px 46px; } .landing-hero-copy { order: 1; } .landing-floats { order: 2; position: static; display: grid; grid-template-columns: repeat(2, 1fr); align-items: start; gap: 14px; width: 100%; max-width: 580px; margin-top: 42px; } .float { position: static; width: auto; transform: none; } .landing-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 700px) { .landing-header, .landing-hero, .landing-section, .landing-close, .landing-footer { padding-left: 24px; padding-right: 24px; } .landing-header { padding-top: 22px; padding-bottom: 22px; } .landing-stage { min-height: 78vh; padding: 44px 20px 40px; border-radius: 16px; } .landing-floats { grid-template-columns: 1fr; max-width: 330px; margin-top: 34px; gap: 12px; } .landing-actions { flex-wrap: wrap; } .landing-section { padding-top: 44px; padding-bottom: 44px; } .landing-grid { grid-template-columns: 1fr; gap: 28px; } .landing-steps { grid-template-columns: 1fr; gap: 26px; } .landing-close { padding-top: 48px; padding-bottom: 58px; } }
