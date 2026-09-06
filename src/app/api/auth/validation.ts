@@ -45,6 +45,25 @@ export function avatarInput(value: unknown): string | null {
   }
 }
 
+export type ProfileField = "name" | "major" | "interests" | "avatar_url";
+export type ProfileValues = Record<ProfileField, string>;
+export type ProfileValidation = { values: ProfileValues; errors: Partial<Record<ProfileField, string>>; profile?: { name: string; major: string; interests: string; avatar_url: string | null } };
+
+/** Shared profile validation for both first-run onboarding and later edits. */
+export function validateProfile(form: FormData): ProfileValidation {
+  const values: ProfileValues = {
+    name: String(form.get("name") || ""), major: String(form.get("major") || ""),
+    interests: String(form.get("interests") || ""), avatar_url: String(form.get("avatar_url") || ""),
+  };
+  const errors: Partial<Record<ProfileField, string>> = {};
+  let name = "", major = "", interests = "", avatar_url: string | null = null;
+  try { name = textInput(form.get("name"), "Name", 100, true); } catch (error) { errors.name = error instanceof InputError ? error.message : "Enter your name."; }
+  try { major = textInput(form.get("major"), "Major", 120); } catch (error) { errors.major = error instanceof InputError ? error.message : "Check your major."; }
+  try { interests = textInput(form.get("interests"), "Interests", 500); } catch (error) { errors.interests = error instanceof InputError ? error.message : "Check your interests."; }
+  try { avatar_url = avatarInput(form.get("avatar_url")); } catch (error) { errors.avatar_url = error instanceof InputError ? error.message : "Check your profile picture URL."; }
+  return Object.keys(errors).length ? { values, errors } : { values, errors, profile: { name, major, interests, avatar_url } };
+}
+
 export function applicationOrigin(requestUrl?: string): string {
   const configured = process.env.APP_URL;
   if (!configured && process.env.NODE_ENV === "production") {
