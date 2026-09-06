@@ -16,6 +16,7 @@
     "test:database": "node --test tests/*.test.mjs",
     "test:auth": "tsx --test src/app/api/auth/*.test.ts",
     "test:auth:smoke": "node scripts/check-auth.mjs",
+    "test:notifications": "node --experimental-strip-types --test src/lib/email.test.ts",
     "test:feed": "tsx --test src/lib/feed*.test.ts",
     "catalog:validate": "tsx scripts/catalog-validate.ts",
     "test:catalog": "tsx --test src/lib/catalog-validation.test.ts"
