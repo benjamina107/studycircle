@@ -118,7 +118,7 @@
 .group-dropdown-empty { padding:12px; font-size:13px; line-height:1.6; }
 .group-profile { flex-shrink:0; margin-left:auto; display:grid; place-items:center; width:42px; height:42px; border-radius:50%; color:#304b3b; }
 .group-profile:hover, .group-profile[aria-current] { background:#eff2e9; }
-.group-tabs { position:fixed; bottom:0; left:0; right:0; z-index:30; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; border-top:1px solid #dfe2d6; background:#fffefa; padding:8px max(16px,calc((100vw - 720px)/2)) calc(8px + env(safe-area-inset-bottom,0px)); }
+.group-tabs { position:fixed; bottom:0; left:0; right:0; z-index:30; display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; border-top:1px solid #dfe2d6; background:#fffefa; padding:8px max(16px,calc((100vw - 720px)/2)) calc(8px + env(safe-area-inset-bottom,0px)); }
 .group-tabs > * { display:flex; flex-direction:column; gap:4px; align-items:center; justify-content:center; justify-self:stretch; min-width:0; width:100%; min-height:52px; padding:7px 8px; text-align:center; font-size:12px; cursor:pointer; border-radius:8px; color:#697365; }
 .group-tabs > *:hover { background:#eff2e9; }
 .group-tabs [aria-current] { background:#e6ebde; color:#304b3b; font-weight:600; }
@@ -228,3 +228,5 @@
 .student-profile { padding-bottom:24px; }
 
 .group-content:has(#class-files-surface){padding-top:12px;}
+
+.group-content:has(#classmates-surface){padding-top:12px;}

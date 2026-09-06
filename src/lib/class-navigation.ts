@@ -1,6 +1,6 @@
 export type ClassOption = { id: string; spaceId: string; code: string; title: string; professor: string; term: string };
-export type ClassTab = "meetups" | "chat" | "files";
-export const CLASS_TABS: { id: ClassTab; label: string }[] = [{ id: "meetups", label: "Meetups" }, { id: "chat", label: "Chat" }, { id: "files", label: "Files" }];
+export type ClassTab = "meetups" | "chat" | "files" | "classmates";
+export const CLASS_TABS: { id: ClassTab; label: string }[] = [{ id: "meetups", label: "Meetups" }, { id: "chat", label: "Chat" }, { id: "files", label: "Files" }, { id: "classmates", label: "Classmates" }];
 export function classHref(group: ClassOption, tab: ClassTab = "meetups") {
   return `/spaces/${encodeURIComponent(group.spaceId)}/${encodeURIComponent(group.id)}/${tab}`;
 }
